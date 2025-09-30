@@ -23,6 +23,7 @@ class NabatDexApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       initialRoute: AppRoutes.initialRoutes,
       routes: AppRoutes.routes,
+      //TODO: Add Option to maintain font size across different font system settings
     );
   }
 }

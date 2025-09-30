@@ -1,6 +1,8 @@
 import 'package:nabatdex/common/shared_screen/main_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:nabatdex/core/constant/app_navigation_items.dart';
+import 'package:nabatdex/features/scanner/presentation/screen/prediction_error_screen.dart';
+import 'package:nabatdex/features/scanner/presentation/screen/prediction_loading_screen.dart';
+import 'package:nabatdex/features/scanner/presentation/screen/prediction_result_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -15,6 +17,8 @@ class AppRoutes {
 
     // Di bawah ini named route untuk semua screen
     // kecuali main screen journal dan ensiklopedia sudah ada di routes '/'
-    '/scanner': (context) => Placeholder(),
+    '/scanner/prediction/result': (context) => PredictionResultScreen(),
+    '/scanner/prediction/loading': (context) => PredictionLoadingScreen(),
+    '/scanner/prediction/error': (context) => PredictionErrorScreen(),
   };
 }

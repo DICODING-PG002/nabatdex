@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nabatdex/common/shared_provider/navigation_provider.dart';
 import 'package:nabatdex/common/shared_widgets/app_bottom_navbar.dart';
 import 'package:nabatdex/core/model/navbar_item.dart';
+import 'package:nabatdex/features/scanner/presentation/screen/scan_options_dialog.dart';
 import 'package:provider/provider.dart';
 
 class MainScreen extends StatelessWidget {
@@ -20,7 +21,16 @@ class MainScreen extends StatelessWidget {
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, '/screen');
+          showGeneralDialog(
+            context: context,
+            barrierColor: Colors.black.withValues(alpha: 0.6),
+            barrierDismissible: true,
+            barrierLabel: 'ScanOptionsDialog',
+            transitionDuration: const Duration(milliseconds: 200),
+            pageBuilder: (context, __, ___) {
+              return ScanOptionsDialog();
+            },
+          );
         },
         shape: const CircleBorder(),
         child: const Icon(Icons.add),
