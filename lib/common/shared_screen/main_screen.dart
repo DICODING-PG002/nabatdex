@@ -27,7 +27,7 @@ class MainScreen extends StatelessWidget {
             barrierDismissible: true,
             barrierLabel: 'ScanOptionsDialog',
             transitionDuration: const Duration(milliseconds: 200),
-            pageBuilder: (context, __, ___) {
+            pageBuilder: (context, _, _) {
               return ScanOptionsDialog();
             },
           );

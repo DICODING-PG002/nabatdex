@@ -40,6 +40,11 @@ class AppTheme {
     textTheme: GoogleFonts.robotoTextTheme()
         .apply(bodyColor: textColor, displayColor: textColor)
         .copyWith(
+          displaySmall: GoogleFonts.roboto(
+            color: primaryColor,
+            fontWeight: FontWeight.w700,
+            fontSize: 36,
+          ),
           headlineLarge: GoogleFonts.roboto(
             color: primaryColor,
             fontWeight: FontWeight.w700,
@@ -66,7 +71,7 @@ class AppTheme {
         ),
 
     // --- Icon Theme ---
-    iconTheme: IconThemeData(color: primaryColor, size: 32),
+    iconTheme: IconThemeData(color: secondaryColor, size: 32),
 
     // --- Component Themes ---
     // Styling spesifik untuk widget.

@@ -1,5 +1,6 @@
 import 'package:nabatdex/core/model/navbar_item.dart';
 import 'package:flutter/material.dart';
+import 'package:nabatdex/features/journal/presentation/screen/journal_home_screen.dart';
 
 class AppNavigationItems {
   AppNavigationItems._();
@@ -8,13 +9,7 @@ class AppNavigationItems {
     NavbarItem(
       icon: Icons.book_outlined,
       label: 'Jurnal',
-      page: Scaffold(
-        body: Center(
-          child: Text(
-            "Untuk menampilkan halaman Jurnal, ubah properti page di lib/core/constant/app_navigation_items menjadi Screen nya",
-          ),
-        ),
-      ),
+      page: JournalHomeScreen(),
       key: Key('journal_screen'),
     ),
     NavbarItem(
