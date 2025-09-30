@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:nabatdex/common/shared_provider/navigation_provider.dart';
+import 'package:nabatdex/common/shared_provider/app_provider.dart';
 import 'package:nabatdex/core/constant/app_routes.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => NavigationProvider(),
+    MultiProvider(
+      providers: AppProvider.globalProviders,
       child: const NabatDexApp(),
     ),
   );
