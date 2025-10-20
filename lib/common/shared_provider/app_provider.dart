@@ -1,4 +1,5 @@
 import 'package:nabatdex/common/shared_provider/navigation_provider.dart';
+import 'package:nabatdex/features/scanner/presentation/providers/image_scan_provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +10,9 @@ class AppProvider {
     return [
       ChangeNotifierProvider<NavigationProvider>(
         create: (_) => NavigationProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => ImageScanProvider(),
       ),
     ];
   }
