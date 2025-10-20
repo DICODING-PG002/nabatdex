@@ -139,24 +139,21 @@ class ImageScanProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. Pick image dari sumber (camera/gallery)
+      // Pick image dari sumber (camera/gallery)
       final pickedFile = await _picker.pickImage(
         source: source,
         imageQuality: 100, // Kualitas tinggi untuk proses resize yang lebih baik
       );
       
       if (pickedFile != null) {
-        debugPrint('📸 Gambar dipilih: ${pickedFile.path}');
+        debugPrint(' Gambar dipilih: ${pickedFile.path}');
         
-        // 2. Resize gambar menjadi exact 256x256 pixels
+        // Resize gambar menjadi exact 256x256 pixels dan simpan
         final resizedFile = await _resizeImageTo256x256(pickedFile);
         
-        // 3. Simpan di provider
         _imageFile = resizedFile;
         _state = ImageLoaded(resizedFile);
         notifyListeners();
-        
-        debugPrint('✅ Gambar siap digunakan (256x256): ${resizedFile.path}');
         return true;
       } else {
         // User membatalkan pemilihan gambar
@@ -169,62 +166,6 @@ class ImageScanProvider with ChangeNotifier {
       notifyListeners();
       debugPrint('❌ Error pickImage: $e');
       return false;
-    }
-  }
-
-  Future<void> cropImage() async {
-    // Pastikan ada file gambar untuk di-crop
-    if (_imageFile == null) return;
-
-    // Set loading state
-    _state = ImageLoading();
-    notifyListeners();
-
-    try {
-      if (_imageFile == null) {
-        throw Error();
-      }
-      
-      final croppedFile = await _cropper.cropImage(
-        sourcePath: _imageFile!.path,
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Edit Gambar',
-            toolbarColor: Colors.deepOrange,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: true, // Lock ke square untuk 1:1 ratio
-          ),
-          IOSUiSettings(
-            title: 'Edit Gambar',
-            doneButtonTitle: 'Selesai',
-            cancelButtonTitle: 'Batal',
-            aspectRatioLockEnabled: true,
-            aspectRatioPickerButtonHidden: true,
-          ),
-        ],
-      );
-
-      // Jika user berhasil crop (tidak menekan tombol cancel)
-      if (croppedFile != null) {
-        debugPrint('✂️ Gambar berhasil di-crop: ${croppedFile.path}');
-        
-        // Resize gambar hasil crop ke 256x256
-        final resizedFile = await _resizeImageTo256x256(XFile(croppedFile.path));
-        
-        // Ganti file gambar lama & state dengan file yang sudah di-crop & resize
-        _imageFile = resizedFile;
-        _state = ImageLoaded(_imageFile!);
-        notifyListeners();
-      } else {
-        // User membatalkan crop, kembalikan ke state loaded dengan gambar lama
-        _state = ImageLoaded(_imageFile!);
-        notifyListeners();
-      }
-    } catch (e) {
-      _state = ImageError("Gagal mengedit gambar: $e");
-      notifyListeners();
-      debugPrint('❌ Error cropImage: $e');
     }
   }
 

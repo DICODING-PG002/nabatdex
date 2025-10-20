@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 import 'package:nabatdex/features/scanner/presentation/providers/image_scan_provider.dart';
-import 'package:nabatdex/features/scanner/presentation/screen/image_preview_screen.dart';
+import 'package:nabatdex/features/scanner/presentation/screen/image_loading_screen.dart';
 import 'package:nabatdex/features/scanner/presentation/widgets/dialog_body.dart';
 import 'package:nabatdex/features/scanner/presentation/widgets/dialog_content.dart';
 import 'package:provider/provider.dart';
@@ -15,55 +15,53 @@ class ScanOptionsDialog extends StatefulWidget {
 }
 
 class _ScanOptionsDialogState extends State<ScanOptionsDialog> {
-  bool _isLoading = false;
+  bool _isProcessing = false;
 
-  Future<void> _pickOptionsAndNavigate(BuildContext context, ImageSource source) async {
-    // Set loading state
-    setState(() {
-      _isLoading = true;
-    });
+  /// Handler untuk memilih gambar dan navigate ke loading screen
+  Future<void> _pickImageAndNavigate(BuildContext context, ImageSource source) async {
+    // Cegah multiple clicks
+    if (_isProcessing) return;
 
-    final imageProvider = Provider.of<ImageScanProvider>(context, listen: false);
-    final bool isSuccess = await imageProvider.pickImage(source);
-
-    // Reset loading state
     if (mounted) {
       setState(() {
-        _isLoading = false;
+        _isProcessing = true;
       });
     }
 
-    // Check apakah widget masih dalam tree (aktif) & pick image sukses
-    if (context.mounted) {
-      if (isSuccess) {
-        // Gambar berhasil dipilih dan disimpan di provider
-        debugPrint('Gambar berhasil dipilih: ${imageProvider.imageFile?.path}');
-        
-        // Tutup dialog terlebih dahulu
-        Navigator.of(context).pop();
+    final imageProvider = Provider.of<ImageScanProvider>(context, listen: false);
 
-        // Navigate ke preview screen untuk melihat, edit, dan analyze gambar
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const ImagePreviewScreen(),
-          ),
-        );
-      } else {
-        // Gagal mengambil gambar, tampilkan error jika ada
-        final state = imageProvider.state;
-        if (state is ImageError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: AppTheme.errorColor,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        } else {
-          // User membatalkan pemilihan gambar (tidak perlu tampilkan error)
-          debugPrint('User membatalkan pemilihan gambar');
-        }
+    // Tutup dialog scan options terlebih dahulu
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+
+    // Navigate ke loading screen
+    if (context.mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const ImageLoadingScreen(),
+        ),
+      );
+    }
+
+    // Mulai proses pick & resize image di background
+    // Loading screen akan listen ke state changes dan auto-navigate ke preview
+    final bool isSuccess = await imageProvider.pickImage(source);
+
+    if (!isSuccess && context.mounted) {
+      // pop loading screen Jika user membatalkan pemilihan gambar, 
+      final state = imageProvider.state;
+      if (state is ImageInitial) {
+        debugPrint('User membatalkan pemilihan gambar');
+        Navigator.of(context).pop();
       }
+    }
+
+    // Check mounted sebelum setState untuk menghindari error
+    if (mounted) {
+      setState(() {
+        _isProcessing = false;
+      });
     }
   }
 
@@ -92,9 +90,9 @@ class _ScanOptionsDialogState extends State<ScanOptionsDialog> {
 
           //Pilihan Scan
           ElevatedButton.icon(
-            onPressed: _isLoading ? null : () {
-              //Logic Camera
-              _pickOptionsAndNavigate(context, ImageSource.camera);
+            onPressed: _isProcessing ? null : () {
+              // Ambil gambar dari kamera
+              _pickImageAndNavigate(context, ImageSource.camera);
             },
             icon: const Icon(Icons.camera_alt),
             label: const Text('Ambil dari Kamera'),
@@ -108,9 +106,9 @@ class _ScanOptionsDialogState extends State<ScanOptionsDialog> {
           ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            onPressed: _isLoading ? null : () {
-              //Logic open gallery
-              _pickOptionsAndNavigate(context, ImageSource.gallery);
+            onPressed: _isProcessing ? null : () {
+              // Pilih gambar dari galeri
+              _pickImageAndNavigate(context, ImageSource.gallery);
             },
             icon: const Icon(Icons.photo_library),
             label: const Text('Pilih dari Galeri'),
@@ -127,11 +125,11 @@ class _ScanOptionsDialogState extends State<ScanOptionsDialog> {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+              onPressed: _isProcessing ? null : () => Navigator.of(context).pop(),
               child: Text(
                 'Batal',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: _isLoading ? Colors.grey : AppTheme.secondaryColor,
+                  color: _isProcessing ? Colors.grey : AppTheme.secondaryColor,
                 ),
               ),
             ),

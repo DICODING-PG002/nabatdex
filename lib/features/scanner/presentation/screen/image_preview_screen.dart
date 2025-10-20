@@ -139,26 +139,6 @@ class ImagePreviewScreen extends StatelessWidget {
 
                   const SizedBox(height: 32),
 
-                  // Edit Button
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      await provider.cropImage();
-                      // Jika user membatalkan crop, tetap di screen ini
-                    },
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Edit Gambar'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.primaryColor,
-                      side: const BorderSide(color: AppTheme.primaryColor, width: 2),
-                      minimumSize: const Size(double.infinity, 52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
                   // Analyze Button
                   ElevatedButton.icon(
                     onPressed: () {
