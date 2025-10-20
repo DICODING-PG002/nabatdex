@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class ImageScanProvider with ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
@@ -15,24 +19,115 @@ class ImageScanProvider with ChangeNotifier {
 
   XFile? get imageFile => _imageFile;
 
+  /// Resize gambar menjadi exact 256x256 pixels
+  Future<XFile> _resizeImageTo256x256(XFile imageFile) async {
+    try {
+      // Baca file gambar
+      final bytes = await imageFile.readAsBytes();
+      
+      // Decode gambar
+      img.Image? image = img.decodeImage(bytes);
+      
+      if (image == null) {
+        throw Exception('Gagal decode gambar');
+      }
+
+      // Resize gambar ke 256x256 dengan cara crop center square terlebih dahulu
+      // untuk menjaga aspect ratio 1:1
+      int size = image.width < image.height ? image.width : image.height;
+      int offsetX = (image.width - size) ~/ 2;
+      int offsetY = (image.height - size) ~/ 2;
+
+      // Crop ke center square
+      img.Image croppedImage = img.copyCrop(
+        image,
+        x: offsetX,
+        y: offsetY,
+        width: size,
+        height: size,
+      );
+
+      // Resize ke 256x256
+      img.Image resizedImage = img.copyResize(
+        croppedImage,
+        width: 256,
+        height: 256,
+        interpolation: img.Interpolation.linear,
+      );
+
+      // Save ke temporary directory
+      final tempDir = await getTemporaryDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = 'resized_image_$timestamp.jpg';
+      final filePath = path.join(tempDir.path, fileName);
+
+      // Encode dan save
+      final resizedBytes = img.encodeJpg(resizedImage, quality: 90);
+      final file = File(filePath);
+      await file.writeAsBytes(resizedBytes);
+
+      debugPrint('Gambar berhasil di-resize menjadi 256x256: $filePath');
+
+      return XFile(filePath);
+    } catch (e) {
+      debugPrint('Error saat resize gambar: $e');
+      // Jika gagal resize, return gambar original
+      return imageFile;
+    }
+  }
+
+  /// Mendapatkan permission yang tepat berdasarkan source dan versi Android
+  Future<PermissionStatus> _requestPermission(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      return await Permission.camera.request();
+    } else {
+      // Untuk galeri, cek versi Android
+      if (Platform.isAndroid) {
+        // Untuk Android 13+ (API 33+), gunakan permission.photos
+        // Untuk Android 10-12 (API 29-32), gunakan permission.storage
+        // permission_handler akan otomatis handle ini
+        
+        // Coba request photos permission terlebih dahulu (untuk Android 13+)
+        final photosStatus = await Permission.photos.request();
+        
+        if (photosStatus.isGranted) {
+          return photosStatus;
+        }
+        
+        // Jika tidak granted, coba storage permission (untuk Android 10-12)
+        final storageStatus = await Permission.storage.request();
+        
+        // Return status yang lebih baik (granted > limited > denied)
+        if (storageStatus.isGranted || photosStatus.isGranted) {
+          return PermissionStatus.granted;
+        } else if (storageStatus.isLimited || photosStatus.isLimited) {
+          return PermissionStatus.limited;
+        } else if (storageStatus.isPermanentlyDenied || photosStatus.isPermanentlyDenied) {
+          return PermissionStatus.permanentlyDenied;
+        } else {
+          return PermissionStatus.denied;
+        }
+      } else {
+        // Untuk iOS
+        return await Permission.photos.request();
+      }
+    }
+  }
+
   Future<bool> pickImage(ImageSource source) async {
-    final Permission permission = source == ImageSource.camera
-        ? Permission.camera
-        : Permission.photos;
+    final PermissionStatus status = await _requestPermission(source);
 
-    final PermissionStatus status = await permission.request();
-
-    if (!status.isGranted) {
+    if (!status.isGranted && !status.isLimited) {
       String message;
       if (status.isPermanentlyDenied) {
         message =
-        "Izin untuk mengakses ${source.name} ditolak permanen. "
+        "Izin untuk mengakses ${source == ImageSource.camera ? 'kamera' : 'galeri'} ditolak permanen. "
             "Harap aktifkan izin di pengaturan aplikasi.";
         // Buka halaman pengaturan aplikasi
         await openAppSettings();
       } else {
         // Jika hanya ditolak sementara (belum di klik tolak melalui pop up permission request)
-        message = "Izin untuk mengakses ${source.name} ditolak.";
+        message = "Izin untuk mengakses ${source == ImageSource.camera ? 'kamera' : 'galeri'} ditolak.";
       }
 
       _state = ImageError(message);
@@ -44,17 +139,27 @@ class ImageScanProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      // 1. Pick image dari sumber (camera/gallery)
       final pickedFile = await _picker.pickImage(
         source: source,
-        maxHeight: 256,
-        maxWidth: 256,
+        imageQuality: 100, // Kualitas tinggi untuk proses resize yang lebih baik
       );
+      
       if (pickedFile != null) {
-        _imageFile = pickedFile;
-        _state = ImageLoaded(pickedFile);
+        debugPrint('📸 Gambar dipilih: ${pickedFile.path}');
+        
+        // 2. Resize gambar menjadi exact 256x256 pixels
+        final resizedFile = await _resizeImageTo256x256(pickedFile);
+        
+        // 3. Simpan di provider
+        _imageFile = resizedFile;
+        _state = ImageLoaded(resizedFile);
         notifyListeners();
+        
+        debugPrint('✅ Gambar siap digunakan (256x256): ${resizedFile.path}');
         return true;
       } else {
+        // User membatalkan pemilihan gambar
         _state = ImageInitial();
         notifyListeners();
         return false;
@@ -62,6 +167,7 @@ class ImageScanProvider with ChangeNotifier {
     } catch (e) {
       _state = ImageError("Gagal mengambil gambar: $e");
       notifyListeners();
+      debugPrint('❌ Error pickImage: $e');
       return false;
     }
   }
@@ -70,10 +176,15 @@ class ImageScanProvider with ChangeNotifier {
     // Pastikan ada file gambar untuk di-crop
     if (_imageFile == null) return;
 
+    // Set loading state
+    _state = ImageLoading();
+    notifyListeners();
+
     try {
       if (_imageFile == null) {
         throw Error();
       }
+      
       final croppedFile = await _cropper.cropImage(
         sourcePath: _imageFile!.path,
         uiSettings: [
@@ -81,27 +192,39 @@ class ImageScanProvider with ChangeNotifier {
             toolbarTitle: 'Edit Gambar',
             toolbarColor: Colors.deepOrange,
             toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true, // Lock ke square untuk 1:1 ratio
           ),
           IOSUiSettings(
             title: 'Edit Gambar',
             doneButtonTitle: 'Selesai',
             cancelButtonTitle: 'Batal',
+            aspectRatioLockEnabled: true,
+            aspectRatioPickerButtonHidden: true,
           ),
         ],
       );
 
       // Jika user berhasil crop (tidak menekan tombol cancel)
       if (croppedFile != null) {
-        // Ganti file gambar lama & state dengan file yang sudah di-crop
-        _imageFile = XFile(croppedFile.path);
+        debugPrint('✂️ Gambar berhasil di-crop: ${croppedFile.path}');
+        
+        // Resize gambar hasil crop ke 256x256
+        final resizedFile = await _resizeImageTo256x256(XFile(croppedFile.path));
+        
+        // Ganti file gambar lama & state dengan file yang sudah di-crop & resize
+        _imageFile = resizedFile;
+        _state = ImageLoaded(_imageFile!);
+        notifyListeners();
+      } else {
+        // User membatalkan crop, kembalikan ke state loaded dengan gambar lama
         _state = ImageLoaded(_imageFile!);
         notifyListeners();
       }
     } catch (e) {
       _state = ImageError("Gagal mengedit gambar: $e");
       notifyListeners();
+      debugPrint('❌ Error cropImage: $e');
     }
   }
 

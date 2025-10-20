@@ -1,9 +1,18 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Permission untuk akses storage di Android 9 dan kebawah -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="29"
+        tools:replace="android:maxSdkVersion"/>
+    
+    <!-- Permission untuk akses media di Android 13+ (API 33+) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-
+    
+    <!-- Permission untuk kamera -->
     <uses-permission android:name="android.permission.CAMERA" />
+    
+    <!-- Permission untuk internet -->
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="nabatdex"
