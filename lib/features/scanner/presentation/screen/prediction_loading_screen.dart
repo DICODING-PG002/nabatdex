@@ -1,27 +1,96 @@
 import 'package:flutter/material.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
+import 'package:nabatdex/features/scanner/presentation/providers/prediction_provider.dart';
+import 'package:nabatdex/features/scanner/presentation/screen/prediction_error_screen.dart';
+import 'package:nabatdex/features/scanner/presentation/screen/prediction_result_screen.dart';
 
-class PredictionLoadingScreen extends StatelessWidget {
-  const PredictionLoadingScreen({super.key});
+class PredictionLoadingScreen extends StatefulWidget {
+  final String imagePath;
+  final PredictionProvider predictionProvider;
+
+  const PredictionLoadingScreen({
+    super.key,
+    required this.imagePath,
+    required this.predictionProvider,
+  });
+
+  @override
+  State<PredictionLoadingScreen> createState() => _PredictionLoadingScreenState();
+}
+
+class _PredictionLoadingScreenState extends State<PredictionLoadingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startPrediction();
+    });
+  }
+
+  void _startPrediction() {
+    widget.predictionProvider.addListener(_onPredictionStateChanged);
+    widget.predictionProvider.predictPlantDisease(widget.imagePath);
+  }
+
+  void _onPredictionStateChanged() {
+    if (!mounted) return;
+
+    final state = widget.predictionProvider.state;
+
+    if (state is PredictionSuccess) {
+      widget.predictionProvider.removeListener(_onPredictionStateChanged);
+      
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => PredictionResultScreen(
+            result: state.result,
+          ),
+        ),
+      );
+    } else if (state is PredictionError) {
+      widget.predictionProvider.removeListener(_onPredictionStateChanged);
+      
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => PredictionErrorScreen(
+            errorMessage: state.message,
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.predictionProvider.removeListener(_onPredictionStateChanged);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(
-              "Proses prediksi sedang berlangsung",
-              style: TextTheme.of(
-                context,
-              ).titleLarge?.copyWith(color: AppTheme.textColor),
+            const CircularProgressIndicator(
+              color: AppTheme.primaryColor,
+              strokeWidth: 4,
             ),
+            const SizedBox(height: 24),
             Text(
-              "Harap jangan tutup aplikasi",
-              style: TextTheme.of(context).bodyLarge,
+              'Proses prediksi sedang berlangsung',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppTheme.textColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Harap jangan tutup aplikasi',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppTheme.bodyTextColor,
+              ),
             ),
           ],
         ),

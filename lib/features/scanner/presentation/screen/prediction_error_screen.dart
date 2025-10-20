@@ -1,39 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:nabatdex/common/shared_widgets/main_app_bar.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 
 class PredictionErrorScreen extends StatelessWidget {
-  const PredictionErrorScreen({super.key});
+  final String? errorMessage;
+
+  const PredictionErrorScreen({
+    super.key,
+    this.errorMessage,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(),
-        title: Text(
-          "Hasil Prediksi",
-          style: TextTheme.of(
-            context,
-          ).titleMedium?.copyWith(color: AppTheme.textColor),
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: AppTheme.backgroundColor,
+      appBar: const MainAppBar(title: "Hasil Prediksi"),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.error_outline,
+                  size: 80,
+                  color: AppTheme.errorColor,
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+              
               Text(
                 "Terjadi Kesalahan",
-                style: TextTheme.of(
-                  context,
-                ).titleLarge?.copyWith(color: AppTheme.errorColor),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: AppTheme.errorColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(height: 8),
+              
+              const SizedBox(height: 16),
+              
               Text(
+                errorMessage ?? 
                 "Model tidak dapat memprediksi hasil. Pastikan foto merupakan daun dari tanaman dan memiliki pencahayaan yang bagus",
-                style: TextTheme.of(context).bodyLarge,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppTheme.textColor,
+                ),
                 textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 48),
+              
+              ElevatedButton.icon(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Kembali'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: AppTheme.whiteColor,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                ),
               ),
             ],
           ),

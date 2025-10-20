@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:nabatdex/common/shared_widgets/main_app_bar.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 import 'package:nabatdex/features/scanner/presentation/providers/image_scan_provider.dart';
+import 'package:nabatdex/features/scanner/presentation/providers/prediction_provider.dart';
+import 'package:nabatdex/features/scanner/presentation/screen/prediction_loading_screen.dart';
 import 'package:provider/provider.dart';
 
 class ImagePreviewScreen extends StatelessWidget {
@@ -183,10 +185,7 @@ class ImagePreviewScreen extends StatelessWidget {
     );
   }
 
-  /// Handler untuk tombol Analyze
-  /// TODO: Integrate dengan TFlite model di sini
   void _handleAnalyze(BuildContext context, ImageScanProvider provider) {
-    // Validasi gambar
     if (provider.imageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -197,25 +196,19 @@ class ImagePreviewScreen extends StatelessWidget {
       return;
     }
 
-    // TODO: Di sini nanti akan diintegrasikan dengan TFlite model
-    // Untuk sekarang, tampilkan snackbar sebagai placeholder
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Fitur analisis akan segera tersedia'),
-        backgroundColor: AppTheme.secondaryColor,
-        action: SnackBarAction(
-          label: 'OK',
-          textColor: AppTheme.whiteColor,
-          onPressed: () {},
+    final predictionProvider = Provider.of<PredictionProvider>(
+      context,
+      listen: false,
+    );
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PredictionLoadingScreen(
+          imagePath: provider.imageFile!.path,
+          predictionProvider: predictionProvider,
         ),
       ),
     );
-
-    // Contoh navigasi ke loading screen (uncomment jika sudah siap)
-    // Navigator.of(context).pushNamed('/scanner/prediction/loading');
-    
-    // Atau bisa langsung ke hasil prediksi dengan data dummy
-    // Navigator.of(context).pushNamed('/scanner/prediction/result');
   }
 }
 

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image/image.dart' as img;
@@ -9,7 +8,6 @@ import 'package:path/path.dart' as path;
 
 class ImageScanProvider with ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
-  final ImageCropper _cropper = ImageCropper();
 
   ImageState _state = ImageInitial();
 

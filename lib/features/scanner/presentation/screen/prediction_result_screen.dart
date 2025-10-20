@@ -1,100 +1,105 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:nabatdex/common/shared_widgets/main_app_bar.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
+import 'package:nabatdex/core/model/prediction_result_model.dart';
 
 class PredictionResultScreen extends StatelessWidget {
-  const PredictionResultScreen({super.key});
+  final PredictionResultModel result;
+
+  const PredictionResultScreen({
+    super.key,
+    required this.result,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final plantData = result.plantData;
+    final diseaseData = result.diseaseData;
+    final isHealthy = result.isHealthy;
+
     return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(),
-        title: Text(
-          "Hasil Prediksi",
-          style: TextTheme.of(
-            context,
-          ).titleMedium?.copyWith(color: AppTheme.textColor),
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: AppTheme.backgroundColor,
+      appBar: const MainAppBar(title: "Hasil Prediksi"),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            //Image Gallery
-            Image.asset(
-              'assets/image/image_not_found.png',
+            Image.file(
+              File(result.imagePath),
               width: double.infinity,
               height: 300,
               fit: BoxFit.cover,
             ),
-            //Plant Information
+            
             Container(
               padding: const EdgeInsets.all(16.0),
-              color: Colors.white,
+              color: AppTheme.whiteColor,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Judul dan Ikon
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Padi',
-                            style: TextTheme.of(context).headlineLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Terindikasi penyakit kresek (70%)',
-                            style: TextTheme.of(context).titleMedium,
-                          ),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              plantData?.commonName ?? result.predictedPlantName.toUpperCase(),
+                              style: Theme.of(context).textTheme.headlineLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isHealthy
+                                  ? 'Tanaman anda sehat (${result.confidencePercentage})'
+                                  : 'Terindikasi penyakit ${diseaseData?.name ?? result.diseaseName} (${result.confidencePercentage})',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
                       ),
-                      //Icon Sakit
-                      Icon(Symbols.syringe),
-                      //Icon Sehat
-                      // Icon(Symbols.check_circle),
+                      Icon(
+                        isHealthy ? Symbols.check_circle : Symbols.syringe,
+                        color: isHealthy ? AppTheme.secondaryColor : AppTheme.errorColor,
+                        size: 40,
+                      ),
                     ],
                   ),
 
-                  // Indikasi Penyakit
-                  const SizedBox(height: 16),
-
-                  // Deskripsi Penyebab
-                  Text(
-                    'Disebabkan oleh bakteri Xanthomonas oryzae pv. oryzae. Bakteri ini masuk ke tanaman padi melalui luka pada daun atau melalui pori-pori alami daun (hidatoda). Penyakit ini menyebar sangat cepat melalui percikan air hujan, irigasi, dan angin. Kondisi lembap dan hangat, serta pemupukan Nitrogen (N) yang berlebihan, akan memperparah serangan.',
-                    textAlign: TextAlign.justify,
-                    style: TextTheme.of(context).bodyMedium,
-                  ),
                   const SizedBox(height: 24),
 
-                  // Solusi & Pengendalian
-                  Text(
-                    'Solusi & Pengendalian',
-                    style: TextTheme.of(context).titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras velit eros,',
-                    style: TextTheme.of(context).bodyMedium,
-                  ),
-                  const SizedBox(height: 24),
+                  if (!isHealthy && diseaseData != null) ...[
+                    Text(
+                      diseaseData.cause,
+                      textAlign: TextAlign.justify,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 24),
 
-                  // Aktivitas Perawatan Anda
+                    Text(
+                      'Solusi & Pengendalian',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      diseaseData.controlSolution,
+                      textAlign: TextAlign.justify,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
                   Text(
                     'Aktivitas Perawatan Anda',
-                    style: TextTheme.of(context).titleLarge,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Mulai lakukan pencatatan aktivitas anda merawat tanaman ini dengan menyimpan hasil prediksi ke jurnal anda',
-                    style: TextTheme.of(context).bodyMedium,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
 
-                  // Memberi ruang agar tidak tertutup FAB
                   const SizedBox(height: 80),
                 ],
               ),
@@ -109,18 +114,17 @@ class PredictionResultScreen extends StatelessWidget {
           width: double.infinity,
           child: FloatingActionButton.extended(
             onPressed: () {
-              print('Simpan Ke Jurnal ditekan!');
+              debugPrint('Simpan Ke Jurnal ditekan');
             },
+            backgroundColor: AppTheme.primaryColor,
             label: Text(
               'Simpan Ke Jurnal',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: AppTheme.whiteColor),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppTheme.whiteColor,
+              ),
             ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                16,
-              ), // Atur radius sesuai desain
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
         ),
