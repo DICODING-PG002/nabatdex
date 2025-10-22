@@ -1,5 +1,6 @@
 import 'package:nabatdex/core/model/disease_model.dart';
 import 'package:nabatdex/core/model/plant_model.dart';
+import 'package:nabatdex/core/model/journal_entry_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -21,7 +22,7 @@ class PlantDatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -34,6 +35,24 @@ class PlantDatabaseHelper {
       await db.delete('plant_master');
       
       await _insertDummyData(db);
+    }
+    
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS journal_entries (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          plant_name TEXT NOT NULL,
+          disease_name TEXT,
+          confidence_level REAL NOT NULL,
+          image_path TEXT NOT NULL,
+          scan_date TEXT NOT NULL,
+          is_healthy INTEGER NOT NULL,
+          plant_id INTEGER,
+          disease_id INTEGER,
+          FOREIGN KEY (plant_id) REFERENCES plant_master(plant_master_id),
+          FOREIGN KEY (disease_id) REFERENCES pest_disease_master(pest_disease_id)
+        )
+      ''');
     }
   }
 
@@ -91,6 +110,22 @@ class PlantDatabaseHelper {
         image_path TEXT NOT NULL,
         display_order INTEGER NOT NULL,
         FOREIGN KEY (pest_disease_id) REFERENCES pest_disease_master(pest_disease_id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE journal_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plant_name TEXT NOT NULL,
+        disease_name TEXT,
+        confidence_level REAL NOT NULL,
+        image_path TEXT NOT NULL,
+        scan_date TEXT NOT NULL,
+        is_healthy INTEGER NOT NULL,
+        plant_id INTEGER,
+        disease_id INTEGER,
+        FOREIGN KEY (plant_id) REFERENCES plant_master(plant_master_id),
+        FOREIGN KEY (disease_id) REFERENCES pest_disease_master(pest_disease_id)
       )
     ''');
 
@@ -346,6 +381,47 @@ class PlantDatabaseHelper {
   Future<void> resetDatabase() async {
     await deleteDatabase();
     _database = await _initDatabase();
+  }
+
+  Future<int> saveJournalEntry(JournalEntryModel entry) async {
+    final db = await database;
+    final id = await db.insert(
+      'journal_entries',
+      entry.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    return id;
+  }
+
+  Future<List<JournalEntryModel>> getAllJournalEntries() async {
+    final db = await database;
+    final results = await db.query(
+      'journal_entries',
+      orderBy: 'scan_date DESC',
+    );
+
+    return results.map((map) => JournalEntryModel.fromMap(map)).toList();
+  }
+
+  Future<JournalEntryModel?> getJournalEntryById(int id) async {
+    final db = await database;
+    final results = await db.query(
+      'journal_entries',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (results.isEmpty) return null;
+    return JournalEntryModel.fromMap(results.first);
+  }
+
+  Future<int> deleteJournalEntry(int id) async {
+    final db = await database;
+    return await db.delete(
+      'journal_entries',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }
 

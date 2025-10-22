@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:nabatdex/core/constant/app_routes.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 import 'package:nabatdex/features/scanner/presentation/providers/image_scan_provider.dart';
-import 'package:nabatdex/features/scanner/presentation/screen/image_preview_screen.dart';
 import 'package:nabatdex/features/scanner/presentation/widgets/image_processing_loader.dart';
 import 'package:provider/provider.dart';
 
@@ -47,11 +47,7 @@ class _ImageLoadingScreenState extends State<ImageLoadingScreen> {
       provider.removeListener(_onImageStateChanged);
       
       // Navigate dengan replacement agar user tidak bisa back ke loading screen
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const ImagePreviewScreen(),
-        ),
-      );
+      Navigator.of(context).pushReplacementNamed(AppRoutes.scannerPreview);
     } else if (state is ImageError) {
       // Terjadi error saat memproses gambar
       debugPrint('Error saat memproses gambar: ${state.message}');

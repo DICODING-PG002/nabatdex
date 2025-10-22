@@ -1,109 +1,215 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:nabatdex/common/shared_provider/plant_database_provider.dart';
 import 'package:nabatdex/common/shared_widgets/main_app_bar.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
+import 'package:nabatdex/core/model/journal_entry_model.dart';
+import 'package:provider/provider.dart';
 
-class PlantJournalScreen extends StatelessWidget {
-  const PlantJournalScreen({super.key});
+class PlantJournalScreen extends StatefulWidget {
+  final JournalEntryModel journalEntry;
+
+  const PlantJournalScreen({
+    super.key,
+    required this.journalEntry,
+  });
+
+  @override
+  State<PlantJournalScreen> createState() => _PlantJournalScreenState();
+}
+
+class _PlantJournalScreenState extends State<PlantJournalScreen> {
+  bool _isSolutionExpanded = false;
+  bool _isActivityExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.journalEntry.diseaseName != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final dbProvider = Provider.of<PlantDatabaseProvider>(context, listen: false);
+        dbProvider.loadDiseaseByName(widget.journalEntry.diseaseName!);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    final dbProvider = Provider.of<PlantDatabaseProvider>(context, listen: false);
+    dbProvider.clearDiseaseData();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MainAppBar(title: "Jurnal Tanaman"),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            //Image Gallery
-            Image.asset(
-              'assets/image/image_not_found.png',
-              width: double.infinity,
-              height: 300,
-              fit: BoxFit.cover,
-            ),
-            //Plant Information
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              color: Colors.white,
+      appBar: const MainAppBar(title: "Jurnal Tanaman"),
+      body: Consumer<PlantDatabaseProvider>(
+        builder: (context, dbProvider, child) {
+          final diseaseState = dbProvider.diseaseState;
+          final diseaseData = dbProvider.currentDisease;
+          
+          final isLoading = widget.journalEntry.diseaseName != null && 
+                           diseaseState is DiseaseLoading;
+          
+          if (isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryColor,
+              ),
+            );
+          }
+          
+          return SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Judul dan Ikon
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  File(widget.journalEntry.imagePath).existsSync()
+                      ? Image.file(
+                          File(widget.journalEntry.imagePath),
+                          width: double.infinity,
+                          height: 300,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          'assets/image/image_not_found.png',
+                          width: double.infinity,
+                          height: 300,
+                          fit: BoxFit.cover,
+                        ),
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Padi',
-                              style: TextTheme.of(context).headlineLarge,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.journalEntry.plantName,
+                                    style: TextTheme.of(context).headlineLarge,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    widget.journalEntry.isHealthy
+                                        ? 'Tanaman sehat (${widget.journalEntry.confidencePercentage})'
+                                        : 'Terindikasi penyakit ${widget.journalEntry.diseaseName} (${widget.journalEntry.confidencePercentage})',
+                                    style: TextTheme.of(context).titleMedium,
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Terindikasi penyakit kresek (70%)',
-                              style: TextTheme.of(context).titleMedium,
+                            Icon(
+                              widget.journalEntry.isHealthy
+                                  ? Symbols.check_circle
+                                  : Symbols.syringe,
+                              color: widget.journalEntry.isHealthy
+                                  ? AppTheme.secondaryColor
+                                  : AppTheme.errorColor,
+                              size: 40,
                             ),
                           ],
                         ),
-                      ),
-                      //Icon Sakit
-                      Icon(Symbols.syringe),
-                      //Icon Sehat
-                      // Icon(Symbols.check_circle),
-                    ],
-                  ),
 
-                  // Indikasi Penyakit
-                  const SizedBox(height: 16),
+                        if (!widget.journalEntry.isHealthy &&
+                            diseaseData != null) ...[
+                          const SizedBox(height: 24),
+                          Text(
+                            diseaseData.cause,
+                            textAlign: TextAlign.justify,
+                            style: TextTheme.of(context).bodyMedium,
+                          ),
+                          const SizedBox(height: 24),
+                          Theme(
+                            data: Theme.of(context)
+                                .copyWith(dividerColor: Colors.transparent),
+                            child: ExpansionTile(
+                              title: Text(
+                                'Solusi & Pengendalian',
+                                style: TextTheme.of(context).titleLarge,
+                              ),
+                              tilePadding: EdgeInsets.zero,
+                              initiallyExpanded: _isSolutionExpanded,
+                              onExpansionChanged: (bool expanded) {
+                                setState(() {
+                                  _isSolutionExpanded = expanded;
+                                });
+                              },
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      16.0, 0, 16.0, 16.0),
+                                  child: Text(
+                                    diseaseData.controlSolution,
+                                    textAlign: TextAlign.justify,
+                                    style: TextTheme.of(context).bodyMedium,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
 
-                  // Deskripsi Penyebab
-                  Text(
-                    'Disebabkan oleh bakteri Xanthomonas oryzae pv. oryzae. Bakteri ini masuk ke tanaman padi melalui luka pada daun atau melalui pori-pori alami daun (hidatoda). Penyakit ini menyebar sangat cepat melalui percikan air hujan, irigasi, dan angin. Kondisi lembap dan hangat, serta pemupukan Nitrogen (N) yang berlebihan, akan memperparah serangan.',
-                    textAlign: TextAlign.justify,
-                    style: TextTheme.of(context).bodyMedium,
-                  ),
-                  const SizedBox(height: 24),
+                        if (widget.journalEntry.isHealthy) ...[
+                          const SizedBox(height: 24),
+                          Text(
+                            'Tanaman Anda dalam kondisi sehat! Lanjutkan perawatan rutin untuk menjaga kesehatan tanaman.',
+                            textAlign: TextAlign.justify,
+                            style: TextTheme.of(context).bodyMedium,
+                          ),
+                          const SizedBox(height: 24),
+                        ],
 
-                  // Solusi & Pengendalian
-                  Text(
-                    'Solusi & Pengendalian',
-                    style: TextTheme.of(context).titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras velit eros,',
-                    style: TextTheme.of(context).bodyMedium,
-                  ),
-                  const SizedBox(height: 24),
+                        Theme(
+                          data: Theme.of(context)
+                              .copyWith(dividerColor: Colors.transparent),
+                          child: ExpansionTile(
+                            title: Text(
+                              'Aktivitas Perawatan Anda',
+                              style: TextTheme.of(context).titleLarge,
+                            ),
+                            tilePadding: EdgeInsets.zero,
+                            initiallyExpanded: _isActivityExpanded,
+                            onExpansionChanged: (bool expanded) {
+                              setState(() {
+                                _isActivityExpanded = expanded;
+                              });
+                            },
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    16.0, 0, 16.0, 16.0),
+                                child: Text(
+                                  'Mulai lakukan pencatatan aktivitas anda merawat tanaman ini dengan menyimpan hasil prediksi ke jurnal anda',
+                                  style: TextTheme.of(context).bodyMedium,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                  // Aktivitas Perawatan Anda
-                  Text(
-                    'Aktivitas Perawatan Anda',
-                    style: TextTheme.of(context).titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Mulai lakukan pencatatan aktivitas anda merawat tanaman ini dengan menyimpan hasil prediksi ke jurnal anda',
-                    style: TextTheme.of(context).bodyMedium,
-                  ),
-
-                  // Memberi ruang agar tidak tertutup FAB
-                  const SizedBox(height: 80),
-                ],
-              ),
-            ),
-          ],
-        ),
+                        const SizedBox(height: 80),
+                      ],
+                    ),
+                    ),
+                  ],
+                ),
+              );
+        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print('Tombol plus ditekan!');
+          debugPrint('Tombol plus ditekan!');
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: AppTheme.primaryColor,
-        child: Icon(Icons.add, size: 32, color: AppTheme.accentColor),
+        child: const Icon(Icons.add, size: 32, color: AppTheme.accentColor),
       ),
     );
   }

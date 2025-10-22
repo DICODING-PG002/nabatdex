@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nabatdex/core/constant/app_routes.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 import 'package:nabatdex/features/scanner/presentation/providers/image_scan_provider.dart';
-import 'package:nabatdex/features/scanner/presentation/screen/image_loading_screen.dart';
 import 'package:nabatdex/features/scanner/presentation/widgets/dialog_body.dart';
 import 'package:nabatdex/features/scanner/presentation/widgets/dialog_content.dart';
 import 'package:provider/provider.dart';
@@ -37,11 +37,7 @@ class _ScanOptionsDialogState extends State<ScanOptionsDialog> {
 
     // Navigate ke loading screen
     if (context.mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const ImageLoadingScreen(),
-        ),
-      );
+      Navigator.of(context).pushNamed(AppRoutes.scannerLoading);
     }
 
     // Mulai proses pick & resize image di background

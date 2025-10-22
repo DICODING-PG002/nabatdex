@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:nabatdex/core/constant/app_routes.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 import 'package:nabatdex/features/scanner/presentation/providers/prediction_provider.dart';
-import 'package:nabatdex/features/scanner/presentation/screen/prediction_error_screen.dart';
-import 'package:nabatdex/features/scanner/presentation/screen/prediction_result_screen.dart';
 
 class PredictionLoadingScreen extends StatefulWidget {
   final String imagePath;
@@ -40,22 +39,16 @@ class _PredictionLoadingScreenState extends State<PredictionLoadingScreen> {
     if (state is PredictionSuccess) {
       widget.predictionProvider.removeListener(_onPredictionStateChanged);
       
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PredictionResultScreen(
-            result: state.result,
-          ),
-        ),
+      Navigator.of(context).pushReplacementNamed(
+        AppRoutes.predictionResult,
+        arguments: state.result,
       );
     } else if (state is PredictionError) {
       widget.predictionProvider.removeListener(_onPredictionStateChanged);
       
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PredictionErrorScreen(
-            errorMessage: state.message,
-          ),
-        ),
+      Navigator.of(context).pushReplacementNamed(
+        AppRoutes.predictionError,
+        arguments: state.message,
       );
     }
   }

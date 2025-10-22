@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nabatdex/common/shared_widgets/main_app_bar.dart';
+import 'package:nabatdex/core/constant/app_routes.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 import 'package:nabatdex/features/scanner/presentation/providers/image_scan_provider.dart';
 import 'package:nabatdex/features/scanner/presentation/providers/prediction_provider.dart';
-import 'package:nabatdex/features/scanner/presentation/screen/prediction_loading_screen.dart';
 import 'package:provider/provider.dart';
 
 class ImagePreviewScreen extends StatelessWidget {
@@ -201,13 +201,12 @@ class ImagePreviewScreen extends StatelessWidget {
       listen: false,
     );
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PredictionLoadingScreen(
-          imagePath: provider.imageFile!.path,
-          predictionProvider: predictionProvider,
-        ),
-      ),
+    Navigator.of(context).pushNamed(
+      AppRoutes.predictionLoading,
+      arguments: {
+        'imagePath': provider.imageFile!.path,
+        'predictionProvider': predictionProvider,
+      },
     );
   }
 }
