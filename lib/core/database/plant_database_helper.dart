@@ -63,9 +63,10 @@ class PlantDatabaseHelper {
 
     await db.execute('''
       CREATE TABLE plant_image (
-        image_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plant_image_id INTEGER PRIMARY KEY AUTOINCREMENT,
         plant_master_id INTEGER NOT NULL,
         image_path TEXT NOT NULL,
+        image_label TEXT NOT NULL,
         display_order INTEGER NOT NULL,
         FOREIGN KEY (plant_master_id) REFERENCES plant_master(plant_master_id)
       )
@@ -111,17 +112,62 @@ class PlantDatabaseHelper {
 
     await _insertDummyData(db);
 
-    // Insert plant images for new installations
+    // Plant images
     await db.insert('plant_image', {
       'plant_master_id': 1,
       'image_path': 'assets/image/plant/potato/kentang_hp.jpg',
+      'image_label': 'Hasil Panen',
       'display_order': 1,
+    });
+    await db.insert('plant_image', {
+      'plant_master_id': 1,
+      'image_path': 'assets/image/plant/potato/kentang_sb.jpg',
+      'image_label': 'Saat Berbunga',
+      'display_order': 2,
+    });
+    await db.insert('plant_image', {
+      'plant_master_id': 1,
+      'image_path': 'assets/image/plant/potato/kentang_bt.jpg',
+      'image_label': 'Bibit',
+      'display_order': 3,
     });
 
     await db.insert('plant_image', {
       'plant_master_id': 2,
       'image_path': 'assets/image/plant/tomato/tomat_hp.jpg',
+      'image_label': 'Hasil Panen',
       'display_order': 1,
+    });
+    await db.insert('plant_image', {
+      'plant_master_id': 2,
+      'image_path': 'assets/image/plant/tomato/tomat_sb.jpg',
+      'image_label': 'Saat Berbunga',
+      'display_order': 2,
+    });
+    await db.insert('plant_image', {
+      'plant_master_id': 2,
+      'image_path': 'assets/image/plant/tomato/tomat_bt.jpg',
+      'image_label': 'Bibit',
+      'display_order': 3,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 3,
+      'image_path': 'assets/image/plant/paddy/padi_hp.jpg',
+      'image_label': 'Hasil Panen',
+      'display_order': 1,
+    });
+    await db.insert('plant_image', {
+      'plant_master_id': 3,
+      'image_path': 'assets/image/plant/paddy/padi_sb.jpg',
+      'image_label': 'Saat Berbunga',
+      'display_order': 2,
+    });
+    await db.insert('plant_image', {
+      'plant_master_id': 3,
+      'image_path': 'assets/image/plant/paddy/padi_bt.jpg',
+      'image_label': 'Bibit',
+      'display_order': 3,
     });
 
     // Insert disease images for new installations
