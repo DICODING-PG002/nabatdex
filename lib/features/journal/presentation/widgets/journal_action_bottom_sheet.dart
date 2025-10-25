@@ -64,24 +64,24 @@ class JournalActionBottomSheet extends StatelessWidget {
           
           const SizedBox(height: 12),
           
-          _ActionTile(
-            icon: Symbols.notifications,
-            iconColor: AppTheme.secondaryColor,
-            title: 'Manage Pengingat',
-            subtitle: 'Atur pengingat untuk perawatan tanaman',
-            onTap: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fitur ini akan segera hadir'),
-                  backgroundColor: AppTheme.primaryColor,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
+          // _ActionTile(
+          //   icon: Symbols.notifications,
+          //   iconColor: AppTheme.secondaryColor,
+          //   title: 'Manage Pengingat',
+          //   subtitle: 'Atur pengingat untuk perawatan tanaman',
+          //   onTap: () {
+          //     Navigator.of(context).pop();
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       const SnackBar(
+          //         content: Text('Fitur ini akan segera hadir'),
+          //         backgroundColor: AppTheme.primaryColor,
+          //         behavior: SnackBarBehavior.floating,
+          //       ),
+          //     );
+          //   },
+          // ),
           
-          const SizedBox(height: 12),
+          // const SizedBox(height: 12),
           
           _ActionTile(
             icon: Symbols.photo_camera,
