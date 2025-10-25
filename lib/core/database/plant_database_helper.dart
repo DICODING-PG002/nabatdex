@@ -1,6 +1,7 @@
 import 'package:nabatdex/core/model/disease_model.dart';
 import 'package:nabatdex/core/model/plant_model.dart';
 import 'package:nabatdex/core/model/journal_entry_model.dart';
+import 'package:nabatdex/core/model/plant_activity_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -22,7 +23,7 @@ class PlantDatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -51,6 +52,36 @@ class PlantDatabaseHelper {
           disease_id INTEGER,
           FOREIGN KEY (plant_id) REFERENCES plant_master(plant_master_id),
           FOREIGN KEY (disease_id) REFERENCES pest_disease_master(pest_disease_id)
+        )
+      ''');
+    }
+    
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS plant_activities (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          journal_entry_id INTEGER NOT NULL,
+          activity_type TEXT NOT NULL,
+          activity_name TEXT NOT NULL,
+          description TEXT NOT NULL,
+          activity_date TEXT NOT NULL,
+          notes TEXT,
+          FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE
+        )
+      ''');
+    }
+    
+    if (oldVersion < 5) {
+      await db.execute('DROP TABLE IF EXISTS plant_activities');
+      await db.execute('''
+        CREATE TABLE plant_activities (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          journal_entry_id INTEGER NOT NULL,
+          activity_type TEXT NOT NULL,
+          activity_name TEXT NOT NULL,
+          notes TEXT NOT NULL,
+          activity_date_time TEXT NOT NULL,
+          FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE
         )
       ''');
     }
@@ -126,6 +157,18 @@ class PlantDatabaseHelper {
         disease_id INTEGER,
         FOREIGN KEY (plant_id) REFERENCES plant_master(plant_master_id),
         FOREIGN KEY (disease_id) REFERENCES pest_disease_master(pest_disease_id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE plant_activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        journal_entry_id INTEGER NOT NULL,
+        activity_type TEXT NOT NULL,
+        activity_name TEXT NOT NULL,
+        notes TEXT NOT NULL,
+        activity_date_time TEXT NOT NULL,
+        FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE
       )
     ''');
 
@@ -419,6 +462,58 @@ class PlantDatabaseHelper {
     final db = await database;
     return await db.delete(
       'journal_entries',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> saveActivity(PlantActivityModel activity) async {
+    final db = await database;
+    if (activity.id == null) {
+      return await db.insert(
+        'plant_activities',
+        activity.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    } else {
+      await db.update(
+        'plant_activities',
+        activity.toMap(),
+        where: 'id = ?',
+        whereArgs: [activity.id],
+      );
+      return activity.id!;
+    }
+  }
+
+  Future<List<PlantActivityModel>> getActivitiesByJournalId(int journalId) async {
+    final db = await database;
+    final results = await db.query(
+      'plant_activities',
+      where: 'journal_entry_id = ?',
+      whereArgs: [journalId],
+      orderBy: 'activity_date_time DESC',
+    );
+
+    return results.map((map) => PlantActivityModel.fromMap(map)).toList();
+  }
+
+  Future<PlantActivityModel?> getActivityById(int id) async {
+    final db = await database;
+    final results = await db.query(
+      'plant_activities',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (results.isEmpty) return null;
+    return PlantActivityModel.fromMap(results.first);
+  }
+
+  Future<int> deleteActivity(int id) async {
+    final db = await database;
+    return await db.delete(
+      'plant_activities',
       where: 'id = ?',
       whereArgs: [id],
     );

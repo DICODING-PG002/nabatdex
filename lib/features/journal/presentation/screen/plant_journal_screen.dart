@@ -5,6 +5,10 @@ import 'package:nabatdex/common/shared_provider/plant_database_provider.dart';
 import 'package:nabatdex/common/shared_widgets/main_app_bar.dart';
 import 'package:nabatdex/core/constant/app_theme.dart';
 import 'package:nabatdex/core/model/journal_entry_model.dart';
+import 'package:nabatdex/features/journal/presentation/providers/plant_activity_provider.dart';
+import 'package:nabatdex/features/journal/presentation/screen/activity_form_screen.dart';
+import 'package:nabatdex/features/journal/presentation/widgets/activity_card.dart';
+import 'package:nabatdex/features/journal/presentation/widgets/journal_action_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
 class PlantJournalScreen extends StatefulWidget {
@@ -21,24 +25,72 @@ class PlantJournalScreen extends StatefulWidget {
 
 class _PlantJournalScreenState extends State<PlantJournalScreen> {
   bool _isSolutionExpanded = false;
-  bool _isActivityExpanded = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.journalEntry.diseaseName != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.journalEntry.diseaseName != null) {
         final dbProvider = Provider.of<PlantDatabaseProvider>(context, listen: false);
         dbProvider.loadDiseaseByName(widget.journalEntry.diseaseName!);
-      });
-    }
+      }
+      
+      final activityProvider = Provider.of<PlantActivityProvider>(context, listen: false);
+      activityProvider.loadActivities(widget.journalEntry.id!);
+    });
   }
 
   @override
   void dispose() {
     final dbProvider = Provider.of<PlantDatabaseProvider>(context, listen: false);
     dbProvider.clearDiseaseData();
+    
+    final activityProvider = Provider.of<PlantActivityProvider>(context, listen: false);
+    activityProvider.clearActivities();
+    
     super.dispose();
+  }
+
+  Future<void> _showDeleteConfirmation(int activityId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.whiteColor,
+        title: const Text('Konfirmasi Hapus'),
+        content: const Text('Apakah Anda yakin ingin menghapus aktivitas ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.errorColor,
+            ),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final activityProvider = Provider.of<PlantActivityProvider>(context, listen: false);
+      final success = await activityProvider.deleteActivity(
+        activityId,
+        widget.journalEntry.id!,
+      );
+
+      if (mounted && success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Aktivitas berhasil dihapus'),
+            backgroundColor: AppTheme.secondaryColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -165,35 +217,94 @@ class _PlantJournalScreenState extends State<PlantJournalScreen> {
                           const SizedBox(height: 24),
                         ],
 
-                        Theme(
-                          data: Theme.of(context)
-                              .copyWith(dividerColor: Colors.transparent),
-                          child: ExpansionTile(
-                            title: Text(
-                              'Aktivitas Perawatan Anda',
-                              style: TextTheme.of(context).titleLarge,
-                            ),
-                            tilePadding: EdgeInsets.zero,
-                            initiallyExpanded: _isActivityExpanded,
-                            onExpansionChanged: (bool expanded) {
-                              setState(() {
-                                _isActivityExpanded = expanded;
-                              });
-                            },
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                    16.0, 0, 16.0, 16.0),
-                                child: Text(
-                                  'Mulai lakukan pencatatan aktivitas anda merawat tanaman ini dengan menyimpan hasil prediksi ke jurnal anda',
-                                  style: TextTheme.of(context).bodyMedium,
+                        Consumer<PlantActivityProvider>(
+                          builder: (context, activityProvider, child) {
+                            final activityState = activityProvider.state;
+                            final activities = activityProvider.activities;
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Aktivitas Perawatan',
+                                      style: TextTheme.of(context).titleLarge,
+                                    ),
+                                    if (activityState is ActivityLoading)
+                                      const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppTheme.primaryColor,
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
+                                const SizedBox(height: 16),
+
+                                if (activities.isEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.backgroundColor,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.grey[200]!,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Belum ada aktivitas perawatan',
+                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            color: AppTheme.bodyTextColor,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Mulai catat aktivitas perawatan tanaman Anda dengan menekan tombol + di bawah',
+                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: AppTheme.bodyTextColor,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: activities.length,
+                                    itemBuilder: (context, index) {
+                                      final activity = activities[index];
+                                      return ActivityCard(
+                                        activity: activity,
+                                        onEdit: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => ActivityFormScreen(
+                                                journalEntryId: widget.journalEntry.id!,
+                                                existingActivity: activity,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        onDelete: () => _showDeleteConfirmation(activity.id!),
+                                      );
+                                    },
+                                  ),
+                              ],
+                            );
+                          },
                         ),
 
-                        const SizedBox(height: 80),
+                        const SizedBox(height: 100),
                       ],
                     ),
                     ),
@@ -205,7 +316,14 @@ class _PlantJournalScreenState extends State<PlantJournalScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          debugPrint('Tombol plus ditekan!');
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: Colors.transparent,
+            isScrollControlled: true,
+            builder: (context) => JournalActionBottomSheet(
+              journalEntry: widget.journalEntry,
+            ),
+          );
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: AppTheme.primaryColor,
