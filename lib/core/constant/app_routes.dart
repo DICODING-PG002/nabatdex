@@ -4,6 +4,7 @@ import 'package:nabatdex/core/constant/app_navigation_items.dart';
 import 'package:nabatdex/core/model/journal_entry_model.dart';
 import 'package:nabatdex/core/model/prediction_result_model.dart';
 import 'package:nabatdex/features/journal/presentation/screen/plant_journal_screen.dart';
+import 'package:nabatdex/features/ensiklopedia/presentation/screen/encyclopedia_page.dart';
 import 'package:nabatdex/features/scanner/presentation/providers/prediction_provider.dart';
 import 'package:nabatdex/features/scanner/presentation/screen/image_loading_screen.dart';
 import 'package:nabatdex/features/scanner/presentation/screen/image_preview_screen.dart';
@@ -21,6 +22,7 @@ class AppRoutes {
   static const String predictionResult = '/scanner/prediction/result';
   static const String predictionError = '/scanner/prediction/error';
   static const String journalPlant = '/journal/plant';
+  static const String encyclopedia = '/encyclopedia';
 
   static String get initialRoutes => home;
 
@@ -47,5 +49,6 @@ class AppRoutes {
       final args = ModalRoute.of(context)!.settings.arguments as JournalEntryModel;
       return PlantJournalScreen(journalEntry: args);
     },
+    encyclopedia: (context) => const EncyclopediaPage(),
   };
 }

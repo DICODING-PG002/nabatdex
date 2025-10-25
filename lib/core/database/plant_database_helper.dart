@@ -23,7 +23,7 @@ class PlantDatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -84,6 +84,112 @@ class PlantDatabaseHelper {
           FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE
         )
       ''');
+    }
+    
+    if (oldVersion < 6) {
+      // Insert sample plant images
+      await db.insert('plant_image', {
+        'plant_master_id': 1,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 1,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 2,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 1,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 3,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 1,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 4,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 2,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 2,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 2,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 2,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 3,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 3,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 3,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 2,
+      });
+
+      await db.insert('plant_image', {
+        'plant_master_id': 3,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 3,
+      });
+
+      // Insert sample disease images
+      await db.insert('pest_disease_image', {
+        'pest_disease_id': 1,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('pest_disease_image', {
+        'pest_disease_id': 2,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('pest_disease_image', {
+        'pest_disease_id': 3,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('pest_disease_image', {
+        'pest_disease_id': 4,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('pest_disease_image', {
+        'pest_disease_id': 5,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('pest_disease_image', {
+        'pest_disease_id': 6,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
+
+      await db.insert('pest_disease_image', {
+        'pest_disease_id': 7,
+        'image_path': 'assets/image/image_not_found.png',
+        'display_order': 1,
+      });
     }
   }
 
@@ -173,6 +279,110 @@ class PlantDatabaseHelper {
     ''');
 
     await _insertDummyData(db);
+    
+    // Insert sample plant images for new installations
+    await db.insert('plant_image', {
+      'plant_master_id': 1,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 1,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 2,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 1,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 3,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 1,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 4,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 2,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 2,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 2,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 2,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 3,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 3,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 3,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 2,
+    });
+
+    await db.insert('plant_image', {
+      'plant_master_id': 3,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 3,
+    });
+
+    // Insert sample disease images for new installations
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 1,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 2,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 3,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 4,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 5,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 6,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 7,
+      'image_path': 'assets/image/image_not_found.png',
+      'display_order': 1,
+    });
   }
 
   Future<void> _insertDummyData(Database db) async {
@@ -331,6 +541,7 @@ class PlantDatabaseHelper {
       'plant_master_id': 3,
       'pest_disease_id': 4,
     });
+
   }
 
   Future<PlantModel?> getPlantByName(String commonName) async {
@@ -517,6 +728,60 @@ class PlantDatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // Plant repository methods
+  Future<List<PlantModel>> getAllPlants() async {
+    final db = await database;
+    final results = await db.query(
+      'plant_master',
+      orderBy: 'common_name ASC',
+    );
+    return results.map((map) => PlantModel.fromMap(map)).toList();
+  }
+
+  Future<PlantModel?> getPlantById(int id) async {
+    final db = await database;
+    final results = await db.query(
+      'plant_master',
+      where: 'plant_master_id = ?',
+      whereArgs: [id],
+    );
+    if (results.isEmpty) return null;
+    return PlantModel.fromMap(results.first);
+  }
+
+  Future<List<Map<String, dynamic>>> getPlantImages(int plantId) async {
+    final db = await database;
+    final results = await db.query(
+      'plant_image',
+      where: 'plant_master_id = ?',
+      whereArgs: [plantId],
+      orderBy: 'display_order ASC',
+    );
+    return results;
+  }
+
+  Future<List<Map<String, dynamic>>> getPlantDiseases(int plantId) async {
+    final db = await database;
+    final results = await db.rawQuery('''
+      SELECT pd.* FROM pest_disease_master pd
+      INNER JOIN plant_pest_disease_link ppl ON pd.pest_disease_id = ppl.pest_disease_id
+      WHERE ppl.plant_master_id = ?
+      ORDER BY pd.name ASC
+    ''', [plantId]);
+    return results;
+  }
+
+  Future<List<Map<String, dynamic>>> getDiseaseImages(int diseaseId) async {
+    final db = await database;
+    final results = await db.query(
+      'pest_disease_image',
+      where: 'pest_disease_id = ?',
+      whereArgs: [diseaseId],
+      orderBy: 'display_order ASC',
+    );
+    return results;
   }
 }
 
