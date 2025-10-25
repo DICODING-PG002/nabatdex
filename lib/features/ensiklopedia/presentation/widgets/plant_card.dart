@@ -4,9 +4,15 @@ import 'package:nabatdex/core/constant/app_theme.dart';
 
 class PlantCard extends StatelessWidget {
   final PlantModel plant;
+  final String? imagePath;
   final VoidCallback onTap;
 
-  const PlantCard({super.key, required this.plant, required this.onTap});
+  const PlantCard({
+    super.key, 
+    required this.plant, 
+    this.imagePath,
+    required this.onTap
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +44,14 @@ class PlantCard extends StatelessWidget {
                 height: 200,
                 width: double.infinity,
                 child: Image.asset(
-                  'assets/image/image_not_found.png',
+                  imagePath ?? 'assets/image/image_not_found.png',
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/image/image_not_found.png',
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
             ),

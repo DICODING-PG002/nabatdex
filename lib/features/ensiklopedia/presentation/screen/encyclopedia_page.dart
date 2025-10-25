@@ -21,6 +21,15 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
     _plantsFuture = PlantDatabaseHelper.instance.getAllPlants();
   }
 
+  Future<Map<int, String?>> _getPlantImages(List<PlantModel> plants) async {
+    Map<int, String?> plantImages = {};
+    for (var plant in plants) {
+      final imagePath = await PlantDatabaseHelper.instance.getPlantImagePath(plant.id);
+      plantImages[plant.id] = imagePath;
+    }
+    return plantImages;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,19 +80,31 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
 
                   final plants = snapshot.data!;
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 20, top: 8),
-                    itemCount: plants.length,
-                    itemBuilder: (context, index) {
-                      final plant = plants[index];
-                      return PlantCard(
-                        plant: plant,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PlantDetailPage(plantId: plant.id),
-                            ),
+                  return FutureBuilder<Map<int, String?>>(
+                    future: _getPlantImages(plants),
+                    builder: (context, imageSnapshot) {
+                      if (imageSnapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      final plantImages = imageSnapshot.data ?? {};
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 20, top: 8),
+                        itemCount: plants.length,
+                        itemBuilder: (context, index) {
+                          final plant = plants[index];
+                          return PlantCard(
+                            plant: plant,
+                            imagePath: plantImages[plant.id],
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PlantDetailPage(plantId: plant.id),
+                                ),
+                              );
+                            },
                           );
                         },
                       );

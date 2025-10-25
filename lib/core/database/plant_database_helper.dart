@@ -21,176 +21,7 @@ class PlantDatabaseHelper {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, 'nabatdex.db');
 
-    return await openDatabase(
-      path,
-      version: 6,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
-    );
-  }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await db.delete('plant_pest_disease_link');
-      await db.delete('pest_disease_master');
-      await db.delete('plant_master');
-      
-      await _insertDummyData(db);
-    }
-    
-    if (oldVersion < 3) {
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS journal_entries (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          plant_name TEXT NOT NULL,
-          disease_name TEXT,
-          confidence_level REAL NOT NULL,
-          image_path TEXT NOT NULL,
-          scan_date TEXT NOT NULL,
-          is_healthy INTEGER NOT NULL,
-          plant_id INTEGER,
-          disease_id INTEGER,
-          FOREIGN KEY (plant_id) REFERENCES plant_master(plant_master_id),
-          FOREIGN KEY (disease_id) REFERENCES pest_disease_master(pest_disease_id)
-        )
-      ''');
-    }
-    
-    if (oldVersion < 4) {
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS plant_activities (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          journal_entry_id INTEGER NOT NULL,
-          activity_type TEXT NOT NULL,
-          activity_name TEXT NOT NULL,
-          description TEXT NOT NULL,
-          activity_date TEXT NOT NULL,
-          notes TEXT,
-          FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE
-        )
-      ''');
-    }
-    
-    if (oldVersion < 5) {
-      await db.execute('DROP TABLE IF EXISTS plant_activities');
-      await db.execute('''
-        CREATE TABLE plant_activities (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          journal_entry_id INTEGER NOT NULL,
-          activity_type TEXT NOT NULL,
-          activity_name TEXT NOT NULL,
-          notes TEXT NOT NULL,
-          activity_date_time TEXT NOT NULL,
-          FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE
-        )
-      ''');
-    }
-    
-    if (oldVersion < 6) {
-      // Insert sample plant images
-      await db.insert('plant_image', {
-        'plant_master_id': 1,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 1,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 2,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 1,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 3,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 1,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 4,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 2,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 2,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 2,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 2,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 3,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 3,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 3,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 2,
-      });
-
-      await db.insert('plant_image', {
-        'plant_master_id': 3,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 3,
-      });
-
-      // Insert sample disease images
-      await db.insert('pest_disease_image', {
-        'pest_disease_id': 1,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('pest_disease_image', {
-        'pest_disease_id': 2,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('pest_disease_image', {
-        'pest_disease_id': 3,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('pest_disease_image', {
-        'pest_disease_id': 4,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('pest_disease_image', {
-        'pest_disease_id': 5,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('pest_disease_image', {
-        'pest_disease_id': 6,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-
-      await db.insert('pest_disease_image', {
-        'pest_disease_id': 7,
-        'image_path': 'assets/image/image_not_found.png',
-        'display_order': 1,
-      });
-    }
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -279,269 +110,387 @@ class PlantDatabaseHelper {
     ''');
 
     await _insertDummyData(db);
-    
-    // Insert sample plant images for new installations
+
+    // Insert plant images for new installations
     await db.insert('plant_image', {
       'plant_master_id': 1,
-      'image_path': 'assets/image/image_not_found.png',
-      'display_order': 1,
-    });
-
-    await db.insert('plant_image', {
-      'plant_master_id': 1,
-      'image_path': 'assets/image/image_not_found.png',
-      'display_order': 2,
-    });
-
-    await db.insert('plant_image', {
-      'plant_master_id': 1,
-      'image_path': 'assets/image/image_not_found.png',
-      'display_order': 3,
-    });
-
-    await db.insert('plant_image', {
-      'plant_master_id': 1,
-      'image_path': 'assets/image/image_not_found.png',
-      'display_order': 4,
-    });
-
-    await db.insert('plant_image', {
-      'plant_master_id': 2,
-      'image_path': 'assets/image/image_not_found.png',
+      'image_path': 'assets/image/plant/potato/kentang_hp.jpg',
       'display_order': 1,
     });
 
     await db.insert('plant_image', {
       'plant_master_id': 2,
-      'image_path': 'assets/image/image_not_found.png',
-      'display_order': 2,
-    });
-
-    await db.insert('plant_image', {
-      'plant_master_id': 2,
-      'image_path': 'assets/image/image_not_found.png',
-      'display_order': 3,
-    });
-
-    await db.insert('plant_image', {
-      'plant_master_id': 3,
-      'image_path': 'assets/image/image_not_found.png',
+      'image_path': 'assets/image/plant/tomato/tomat_hp.jpg',
       'display_order': 1,
     });
 
-    await db.insert('plant_image', {
-      'plant_master_id': 3,
-      'image_path': 'assets/image/image_not_found.png',
-      'display_order': 2,
-    });
-
-    await db.insert('plant_image', {
-      'plant_master_id': 3,
-      'image_path': 'assets/image/image_not_found.png',
-      'display_order': 3,
-    });
-
-    // Insert sample disease images for new installations
+    // Insert disease images for new installations
+    // Potato diseases
     await db.insert('pest_disease_image', {
-      'pest_disease_id': 1,
-      'image_path': 'assets/image/image_not_found.png',
+      'pest_disease_id': 1, // Early_blight
+      'image_path': 'assets/image/plant/potato/disease/potato_early_blight.jpg',
       'display_order': 1,
     });
 
     await db.insert('pest_disease_image', {
-      'pest_disease_id': 2,
-      'image_path': 'assets/image/image_not_found.png',
+      'pest_disease_id': 2, // Late_blight
+      'image_path': 'assets/image/plant/potato/disease/potato_late_blight.jpg',
       'display_order': 1,
     });
 
     await db.insert('pest_disease_image', {
-      'pest_disease_id': 3,
-      'image_path': 'assets/image/image_not_found.png',
+      'pest_disease_id': 3, // healthy
+      'image_path': 'assets/image/plant/potato/kentang_hp.jpg',
+      'display_order': 1,
+    });
+
+    // Tomato diseases
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 4, // Bacterial_spot
+      'image_path':
+          'assets/image/plant/tomato/disease/tomato_bacterial_spot.jpg',
       'display_order': 1,
     });
 
     await db.insert('pest_disease_image', {
-      'pest_disease_id': 4,
-      'image_path': 'assets/image/image_not_found.png',
+      'pest_disease_id': 5, // Early_blight
+      'image_path':
+          'assets/image/plant/tomato/disease/tomato_early_blight.webp',
       'display_order': 1,
     });
 
     await db.insert('pest_disease_image', {
-      'pest_disease_id': 5,
-      'image_path': 'assets/image/image_not_found.png',
+      'pest_disease_id': 6, // Late_blight
+      'image_path': 'assets/image/plant/tomato/disease/tomato_late_blight.jpg',
       'display_order': 1,
     });
 
     await db.insert('pest_disease_image', {
-      'pest_disease_id': 6,
-      'image_path': 'assets/image/image_not_found.png',
+      'pest_disease_id': 7, // Leaf_Mold
+      'image_path': 'assets/image/plant/tomato/disease/tomato_leaf_Mold.jpg',
       'display_order': 1,
     });
 
     await db.insert('pest_disease_image', {
-      'pest_disease_id': 7,
-      'image_path': 'assets/image/image_not_found.png',
+      'pest_disease_id': 8, // Septoria_leaf_spot
+      'image_path':
+          'assets/image/plant/tomato/disease/tomato_septoria_leaf_spot.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 9, // Spider_mites_Two_spotted_spider_mite
+      'image_path':
+          'assets/image/plant/tomato/disease/tomato_spider_mites_two_spotted_spider_mite.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 10, // Target_Spot
+      'image_path': 'assets/image/plant/tomato/disease/tomato__target_spot.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 11, // Tomato_YellowLeaf__Curl_Virus
+      'image_path':
+          'assets/image/plant/tomato/disease/tomato_yellowleaf_curl_virus.webp',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 12, // Tomato_mosaic_virus
+      'image_path':
+          'assets/image/plant/tomato/disease/tomato_tomato_mosaic_virus.png',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 13, // healthy
+      'image_path': 'assets/image/plant/tomato/tomat_hp.jpg',
       'display_order': 1,
     });
   }
 
   Future<void> _insertDummyData(Database db) async {
+    // PLANT MASTER
     await db.insert('plant_master', {
       'plant_master_id': 1,
-      'common_name': 'Tomat',
-      'scientific_name': 'Solanum lycopersicum',
-      'description': 'Tomat adalah tanaman dari keluarga Solanaceae yang menghasilkan buah merah bulat.',
-      'plant_type': 'Sayuran Buah',
-      'life_cycle': 'Tahunan',
-      'optimal_temperature': '20-25°C',
-      'irq_tips': 'Penyiraman teratur, hindari genangan air',
-      'cultivation_guide': 'Tanam di tanah gembur dengan drainase baik, beri pupuk kandang'
-    });
-
-    await db.insert('plant_master', {
-      'plant_master_id': 2,
-      'common_name': 'Padi',
-      'scientific_name': 'Oryza sativa',
-      'description': 'Padi adalah tanaman biji-bijian yang menjadi makanan pokok sebagian besar penduduk dunia.',
-      'plant_type': 'Biji-bijian',
-      'life_cycle': 'Tahunan',
-      'optimal_temperature': '22-32°C',
-      'irq_tips': 'Sawah harus tergenang air selama masa pertumbuhan',
-      'cultivation_guide': 'Tanam di lahan sawah dengan sistem irigasi yang baik'
-    });
-
-    await db.insert('plant_master', {
-      'plant_master_id': 3,
       'common_name': 'Kentang',
       'scientific_name': 'Solanum tuberosum',
-      'description': 'Kentang adalah tanaman umbi-umbian yang kaya karbohidrat.',
-      'plant_type': 'Umbi',
-      'life_cycle': 'Tahunan',
+      'description':
+          'Kentang adalah tanaman umbi bertepung dari famili nightshade Solanum tuberosum. Ini adalah salah satu tanaman pangan terpenting di dunia.',
+      'plant_type': 'Umbi-umbian',
+      'life_cycle': 'Semusim',
       'optimal_temperature': '15-20°C',
-      'irq_tips': 'Tanah harus lembab tetapi tidak tergenang',
-      'cultivation_guide': 'Tanam di dataran tinggi dengan tanah gembur'
+      'irq_tips': 'Jaga tanah tetap lembab namun tidak tergenang air (becek).',
+      'cultivation_guide':
+          'Tanam di tanah gembur yang memiliki drainase baik dengan kandungan bahan organik tinggi. Lakukan penyiangan secara rutin.',
     });
 
+    await db.insert('plant_master', {
+      'plant_master_id': 2,
+      'common_name': 'Tomat',
+      'scientific_name': 'Solanum lycopersicum',
+      'description':
+          'Tomat adalah buah dari tanaman berbunga Solanum lycopersicum. Meskipun secara botani adalah buah beri, tomat umumnya digunakan sebagai sayuran dalam masakan.',
+      'plant_type': 'Sayuran Buah',
+      'life_cycle': 'Semusim',
+      'optimal_temperature': '20-25°C',
+      'irq_tips':
+          'Penyiraman teratur dan konsisten sangat penting. Hindari genangan air untuk mencegah busuk akar.',
+      'cultivation_guide':
+          'Tanam di tanah gembur dengan drainase baik. Berikan pupuk organik dan anorganik secara seimbang. Perlu penopang (ajir) agar tanaman tidak rebah.',
+    });
+
+    await db.insert('plant_master', {
+      'plant_master_id': 3,
+      'common_name': 'Padi',
+      'scientific_name': 'Oryza sativa',
+      'description':
+          'Padi adalah tanaman sereal yang menjadi makanan pokok bagi lebih dari setengah populasi dunia, terutama di Asia. Padi dibudidayakan untuk diambil bijinya (gabah) yang diolah menjadi beras.',
+      'plant_type': 'Sereal / Biji-bijian',
+      'life_cycle': 'Semusim',
+      'optimal_temperature': '25-30°C',
+      'irq_tips':
+          'Membutuhkan pengairan yang konsisten. Umumnya ditanam di lahan basah (sawah) dengan irigasi terkontrol. Fase pertumbuhan berbeda membutuhkan ketinggian air yang berbeda.',
+      'cultivation_guide':
+          'Tanam di tanah lempung berlumpur yang dapat menahan air. Pengelolaan air, pemupukan berimbang (N, P, K), dan pengendalian gulma adalah kunci sukses budidaya.',
+    });
+
+    // DISEASE MASTER
+
+    // Potato Disease
     await db.insert('pest_disease_master', {
       'pest_disease_id': 1,
-      'name': 'Hawar Daun',
+      'name': 'Bercak Kering (Early Blight)',
       'type': 'Penyakit',
-      'description': 'Penyakit yang disebabkan oleh jamur yang menyerang daun tanaman.',
-      'cause': 'Disebabkan oleh jamur Phytophthora infestans. Jamur ini menyerang daun dan batang tanaman, menyebabkan bercak coklat kehitaman yang dapat meluas dengan cepat. Penyakit ini berkembang pesat pada kondisi lembap dan suhu dingin, terutama pada musim hujan.',
-      'control_solution': 'Aplikasi fungisida berbasis tembaga secara rutin, buang dan musnahkan daun yang terinfeksi, atur jarak tanam untuk sirkulasi udara yang baik, hindari penyiraman berlebihan pada daun.',
-      'prevention_guide': 'Gunakan varietas tahan penyakit, jaga kebersihan lahan dari sisa tanaman, hindari kelembaban berlebih dengan drainase yang baik, rotasi tanaman.'
+      'description':
+          'Penyakit jamur umum yang menyerang tanaman kentang, ditandai dengan bercak coklat tua konsentris pada daun.',
+      'cause':
+          'Disebabkan oleh jamur Alternaria solani. Jamur menginfeksi daun bagian bawah terlebih dahulu. Penyakit berkembang dalam kondisi hangat dan lembab (suhu optimal 24-29°C).',
+      'control_solution':
+          'Gunakan fungisida berbahan aktif mancozeb atau klorotalonil. Pangkas dan musnahkan daun yang terinfeksi. Jaga jarak tanam yang memadai.',
+      'prevention_guide':
+          'Lakukan rotasi tanaman minimal 2 tahun. Gunakan varietas tahan. Hindari penyiraman dari atas daun. Bersihkan sisa-sisa tanaman setelah panen.',
     });
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 2,
-      'name': 'Kresek',
+      'name': 'Hawar Daun (Late Blight)',
       'type': 'Penyakit',
-      'description': 'Penyakit bakteri yang menyerang tanaman padi, ditandai dengan daun yang menguning dan mengering dari ujung.',
-      'cause': 'Disebabkan oleh bakteri Xanthomonas oryzae pv. oryzae. Bakteri ini masuk ke tanaman padi melalui luka pada daun atau melalui pori-pori alami daun (hidatoda). Penyakit ini menyebar sangat cepat melalui percikan air hujan, irigasi, dan angin. Kondisi lembap dan hangat, serta pemupukan Nitrogen (N) yang berlebihan, akan memperparah serangan.',
-      'control_solution': 'Gunakan varietas padi yang tahan terhadap penyakit kresek, lakukan pengairan secara intermiten (tidak terus menerus tergenang), kurangi dosis pupuk Nitrogen dan seimbangkan dengan Kalium. Aplikasi bakterisida berbahan aktif tembaga dapat dilakukan pada stadium awal serangan. Sanitasi lahan dengan membuang jerami dan sisa tanaman yang terinfeksi.',
-      'prevention_guide': 'Gunakan benih sehat dan bersertifikat, hindari pemupukan Nitrogen berlebihan, atur sistem irigasi yang baik, lakukan rotasi varietas, jaga kebersihan saluran air dan pematang sawah.'
+      'description':
+          'Penyakit yang sangat merusak yang menyerang tanaman kentang dan tomat, menyebabkan daun dan umbi membusuk.',
+      'cause':
+          'Disebabkan oleh jamur Phytophthora infestans. Penyakit menyebar sangat cepat terutama dalam kondisi sejuk (15-20°C) dan kelembaban tinggi. Dapat menghancurkan tanaman dalam waktu singkat.',
+      'control_solution':
+          'Aplikasikan fungisida sistemik (misal: dimetomorf) secara preventif. Segera cabut dan musnahkan tanaman yang terinfeksi. Perbaiki drainase lahan.',
+      'prevention_guide':
+          'Tanam varietas yang tahan. Hindari jarak tanam terlalu rapat. Pantau cuaca untuk aplikasi fungisida preventif. Lakukan sanitasi lahan dengan ketat.',
     });
 
-    await db.insert('pest_disease_master', {
-      'pest_disease_id': 3,
-      'name': 'Early Blight',
-      'type': 'Penyakit',
-      'description': 'Penyakit bercak daun awal yang menyerang tomat dan kentang.',
-      'cause': 'Disebabkan oleh jamur Alternaria solani. Jamur ini menginfeksi daun bagian bawah terlebih dahulu, membentuk bercak konsentris berwarna coklat gelap. Penyakit berkembang pada kondisi hangat dan lembap dengan suhu optimal 24-29°C.',
-      'control_solution': 'Aplikasi fungisida berbasis mankozeb atau klorotalonil, pemangkasan daun terinfeksi, atur jarak tanam yang cukup, mulsa plastik untuk mencegah percikan tanah ke daun.',
-      'prevention_guide': 'Rotasi tanaman minimal 2 tahun, gunakan varietas tahan, hindari penyiraman dari atas, bersihkan sisa tanaman setelah panen.'
-    });
-
+    // Tomat Disease
     await db.insert('pest_disease_master', {
       'pest_disease_id': 4,
-      'name': 'Late Blight',
+      'name': 'Bercak Bakteri (Bacterial Spot)',
       'type': 'Penyakit',
-      'description': 'Penyakit busuk daun yang sangat merusak pada tomat dan kentang.',
-      'cause': 'Disebabkan oleh jamur Phytophthora infestans. Penyakit ini menyebar sangat cepat terutama pada kondisi dingin (15-20°C) dan lembap tinggi. Dapat menginfeksi seluruh bagian tanaman dalam waktu singkat.',
-      'control_solution': 'Aplikasi fungisida sistemik secara preventif, buang tanaman terinfeksi segera, perbaiki drainase lahan, kurangi kelembapan dengan pemangkasan.',
-      'prevention_guide': 'Tanam varietas tahan penyakit, hindari penanaman terlalu rapat, monitoring cuaca untuk aplikasi fungisida preventif, sanitasi lahan.'
+      'description':
+          'Penyakit bakteri umum yang menyerang daun, batang, dan buah tomat, menyebabkan bercak kecil basah yang kemudian menjadi gelap.',
+      'cause':
+          'Disebabkan oleh bakteri spesies Xanthomonas. Bakteri masuk melalui luka atau lubang alami pada daun. Penyakit menyebar melalui percikan air, angin, dan alat pertanian yang terkontaminasi.',
+      'control_solution':
+          'Semprot dengan bakterisida berbahan dasar tembaga. Buang bagian tanaman yang terinfeksi. Perbaiki sirkulasi udara. Hindari penyiraman dari atas.',
+      'prevention_guide':
+          'Gunakan benih bebas penyakit. Lakukan rotasi tanaman. Jaga jarak tanam yang ideal. Sanitasi alat-alat pertanian.',
     });
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 5,
-      'name': 'Leaf Mold',
+      'name': 'Bercak Kering (Early Blight)',
       'type': 'Penyakit',
-      'description': 'Penyakit jamur yang menyerang daun tomat, terutama di greenhouse.',
-      'cause': 'Disebabkan oleh jamur Passalora fulva (Cladosporium fulvum). Berkembang pada kelembapan tinggi (>85%) dan suhu 20-25°C. Daun terinfeksi menunjukkan bercak kuning di permukaan atas dan lapisan jamur abu-abu di bawah.',
-      'control_solution': 'Tingkatkan ventilasi dan sirkulasi udara, kurangi kelembapan, aplikasi fungisida berbasis tembaga atau sulfur, pemangkasan daun bagian bawah.',
-      'prevention_guide': 'Jaga kelembapan di bawah 85%, atur ventilasi yang baik, gunakan varietas tahan, hindari penyiraman berlebihan.'
+      'description':
+          'Penyakit jamur yang menyerang tanaman tomat, mirip dengan pada kentang. Menyebabkan bercak konsentris pada daun, batang, dan buah.',
+      'cause':
+          'Disebabkan oleh jamur Alternaria solani. Jamur menginfeksi daun bagian bawah terlebih dahulu. Berkembang dalam kondisi hangat dan lembab.',
+      'control_solution':
+          'Gunakan fungisida berbahan aktif mancozeb atau klorotalonil. Pangkas daun yang terinfeksi. Jaga jarak tanam dan gunakan mulsa plastik.',
+      'prevention_guide':
+          'Rotasi tanaman minimal 2 tahun. Gunakan varietas tahan. Hindari penyiraman dari atas. Bersihkan sisa-sisa tanaman.',
     });
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 6,
-      'name': 'Brown Spot',
+      'name': 'Hawar Daun (Late Blight)',
       'type': 'Penyakit',
-      'description': 'Penyakit bercak coklat pada daun padi yang dapat menurunkan hasil panen.',
-      'cause': 'Disebabkan oleh jamur Bipolaris oryzae (Helminthosporium oryzae). Muncul sebagai bercak oval berwarna coklat pada daun. Penyakit ini berkembang pada tanaman yang kekurangan nutrisi, terutama pada tanah miskin Nitrogen.',
-      'control_solution': 'Perbaiki nutrisi tanaman dengan pemupukan berimbang, aplikasi fungisida berbasis triklosiklazol, perbaiki manajemen air sawah, buang jerami terinfeksi.',
-      'prevention_guide': 'Gunakan benih berkualitas dan sehat, pemupukan berimbang terutama Nitrogen dan Kalium, jaga keseimbangan air, varietas tahan penyakit.'
+      'description':
+          'Penyakit jamur yang sangat merusak pada tomat, sama seperti pada kentang. Menyebabkan bercak besar basah pada daun dan buah.',
+      'cause':
+          'Disebabkan oleh jamur Phytophthora infestans. Menyebar sangat cepat dalam kondisi sejuk dan kelembaban tinggi.',
+      'control_solution':
+          'Aplikasikan fungisida sistemik secara preventif. Segera musnahkan tanaman yang terinfeksi. Perbaiki drainase dan kurangi kelembaban.',
+      'prevention_guide':
+          'Tanam varietas tahan. Hindari jarak tanam rapat. Pantau kondisi cuaca. Lakukan sanitasi lahan.',
     });
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 7,
-      'name': 'Leaf Blast',
+      'name': 'Bercak Kapang Daun (Leaf Mold)',
       'type': 'Penyakit',
-      'description': 'Penyakit blas yang menyerang daun padi, sangat merugikan.',
-      'cause': 'Disebabkan oleh jamur Pyricularia oryzae (Magnaporthe oryzae). Membentuk bercak belah ketupat berwarna coklat dengan tepi coklat tua dan bagian tengah putih keabu-abuan. Menyebar cepat pada kondisi lembap dengan suhu 25-28°C.',
-      'control_solution': 'Aplikasi fungisida berbasis trisiklazol atau kasugamisin, kurangi pemupukan Nitrogen berlebihan, atur pengairan intermiten, sanitasi lahan.',
-      'prevention_guide': 'Tanam varietas tahan blas, pemupukan berimbang dengan penekanan pada Kalium dan Silika, hindari Nitrogen berlebihan, monitoring rutin.'
+      'description':
+          'Penyakit jamur yang menyerang daun tomat, terutama di rumah kaca atau area dengan kelembaban tinggi.',
+      'cause':
+          'Disebabkan oleh jamur Passalora fulva. Berkembang pada kelembaban tinggi (>85%) dan suhu 20-25°C. Daun menunjukkan bercak kuning di permukaan atas dan lapisan kapang abu-abu di bawahnya.',
+      'control_solution':
+          'Tingkatkan ventilasi dan sirkulasi udara. Kurangi kelembaban. Semprot fungisida berbahan dasar tembaga atau belerang. Pangkas daun bagian bawah.',
+      'prevention_guide':
+          'Jaga kelembaban di bawah 85%. Pastikan ventilasi baik. Gunakan varietas tahan. Hindari penyiraman berlebih.',
     });
 
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 8,
+      'name': 'Bercak Daun Septoria (Septoria Leaf Spot)',
+      'type': 'Penyakit',
+      'description':
+          'Penyakit jamur yang menyebabkan banyak bercak kecil bundar dengan bagian tengah abu-abu pada daun tomat.',
+      'cause':
+          'Disebabkan oleh jamur Septoria lycopersici. Penyakit menyebar melalui percikan air dan alat yang terkontaminasi. Menyukai kondisi hangat dan lembab.',
+      'control_solution':
+          'Gunakan fungisida yang mengandung klorotalonil atau tembaga. Buang daun yang terinfeksi. Perbaiki sirkulasi udara. Hindari penyiraman dari atas.',
+      'prevention_guide':
+          'Gunakan benih bebas penyakit. Lakukan rotasi tanaman. Jaga jarak tanam. Sanitasi alat secara teratur.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 9,
+      'name': 'Tungau Laba-laba (Tungau Bercak Dua)',
+      'type': 'Hama',
+      'description':
+          'Hama umum yang menyerang tanaman tomat. Ukurannya sangat kecil dan sulit dilihat mata telanjang.',
+      'cause':
+          'Disebabkan oleh tungau Tetranychus urticae. Hama ini menghisap cairan tanaman, menyebabkan bintik-bintik kuning (stippling) dan daun menguning lalu kering. Berkembang pesat dalam kondisi panas dan kering.',
+      'control_solution':
+          'Semprot dengan akarisida (mitisida). Tingkatkan kelembaban (semprot air). Gunakan musuh alami (tungau predator).',
+      'prevention_guide':
+          'Jaga kelembaban yang cukup. Hindari pemupukan nitrogen berlebih. Pantau secara rutin. Gunakan varietas tahan jika ada.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 10,
+      'name': 'Bercak Target (Target Spot)',
+      'type': 'Penyakit',
+      'description':
+          'Penyakit jamur yang menyebabkan bercak bundar seperti "target" (lingkaran konsentris) pada daun tomat.',
+      'cause':
+          'Disebabkan oleh jamur Corynespora cassiicola. Penyakit menyebar melalui percikan air dan angin. Menyukai kondisi hangat dan lembab.',
+      'control_solution':
+          'Gunakan fungisida yang mengandung azoxystrobin atau klorotalonil. Buang bagian tanaman yang terinfeksi. Perbaiki sirkulasi udara.',
+      'prevention_guide':
+          'Gunakan benih bebas penyakit. Lakukan rotasi tanaman. Jaga jarak tanam. Hindari penyiraman dari atas.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 11,
+      'name': 'Virus Keriting Daun Kuning Tomat (TYLCV)',
+      'type': 'Virus',
+      'description':
+          'Penyakit virus yang menyebabkan daun menguning, keriting ke atas, dan tanaman menjadi kerdil.',
+      'cause':
+          'Disebabkan oleh Tomato Yellow Leaf Curl Virus (TYLCV) yang ditularkan oleh kutu kebul (Bemisia tabaci). Virus menyebabkan kerugian hasil panen yang parah.',
+      'control_solution':
+          'Kendalikan populasi kutu kebul dengan insektisida. Cabut dan musnahkan tanaman yang terinfeksi. Gunakan mulsa reflektif (perak).',
+      'prevention_guide':
+          'Gunakan bibit bebas virus. Kendalikan kutu kebul sejak dini. Bersihkan gulma yang menjadi inang virus. Tanam varietas tahan virus.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 12,
+      'name': 'Virus Mosaik Tomat (ToMV)',
+      'type': 'Virus',
+      'description':
+          'Penyakit virus yang menyebabkan pola mosaik (belang-belang hijau muda dan tua) pada daun tomat.',
+      'cause':
+          'Disebabkan oleh Tomato Mosaic Virus (ToMV). Ditularkan secara mekanis melalui alat, tangan, dan sisa-sisa tanaman yang terkontaminasi. Menyebabkan daun keriput dan distorsi.',
+      'control_solution':
+          'Tidak ada obat untuk virus. Cabut dan musnahkan tanaman terinfeksi. Sanitasi alat dengan ketat. Kendalikan hama vektor seperti kutu daun (aphid) jika ada.',
+      'prevention_guide':
+          'Gunakan benih bebas virus. Sanitasi alat di antara tanaman. Cuci tangan sebelum menangani tanaman. Musnahkan tanaman terinfeksi segera.',
+    });
+
+    // PLANT DISEASE LINK
+
+    // Potato Disease Links (plant_master_id: 1)
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 1,
       'pest_disease_id': 1,
-    });
-
+    }); // Early_blight
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 1,
-      'pest_disease_id': 3,
-    });
-
-    await db.insert('plant_pest_disease_link', {
-      'plant_master_id': 1,
-      'pest_disease_id': 4,
-    });
-
-    await db.insert('plant_pest_disease_link', {
-      'plant_master_id': 1,
-      'pest_disease_id': 5,
-    });
-
-    await db.insert('plant_pest_disease_link', {
-      'plant_master_id': 2,
       'pest_disease_id': 2,
-    });
+    }); // Late_blight
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 1,
+      'pest_disease_id': 3,
+    }); // healthy
 
+    // Tomato Disease Links (plant_master_id: 2)
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 2,
+      'pest_disease_id': 4,
+    }); // Bacterial_spot
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 2,
+      'pest_disease_id': 5,
+    }); // Early_blight
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 2,
       'pest_disease_id': 6,
-    });
-
+    }); // Late_blight
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 2,
       'pest_disease_id': 7,
-    });
+    }); // Leaf_Mold
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 2,
+      'pest_disease_id': 8,
+    }); // Septoria_leaf_spot
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 2,
+      'pest_disease_id': 9,
+    }); // Spider_mites
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 2,
+      'pest_disease_id': 10,
+    }); // Target_Spot
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 2,
+      'pest_disease_id': 11,
+    }); // TYLCV
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 2,
+      'pest_disease_id': 12,
+    }); // ToMV
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 2,
+      'pest_disease_id': 13,
+    }); // healthy
 
+    // --- [ADDITION] Rice Disease Links (plant_master_id: 3) ---
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 3,
-      'pest_disease_id': 1,
-    });
-
+      'pest_disease_id': 14,
+    }); // Kresek
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 3,
-      'pest_disease_id': 3,
-    });
-
+      'pest_disease_id': 15,
+    }); // Blas
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 3,
-      'pest_disease_id': 4,
-    });
-
+      'pest_disease_id': 16,
+    }); // Tungro
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 3,
+      'pest_disease_id': 17,
+    }); // healthy
   }
 
   Future<PlantModel?> getPlantByName(String commonName) async {
@@ -558,20 +507,21 @@ class PlantDatabaseHelper {
 
   Future<DiseaseModel?> getDiseaseByName(String diseaseName) async {
     final db = await database;
-    
+
     final diseaseAliases = {
       'bacterial_leaf_blight': 'Kresek',
       'bacterial leaf blight': 'Kresek',
     };
-    
-    String searchName = diseaseAliases[diseaseName.toLowerCase()] ?? diseaseName;
-    
+
+    String searchName =
+        diseaseAliases[diseaseName.toLowerCase()] ?? diseaseName;
+
     final formattedName = searchName
         .replaceAll('_', ' ')
         .split(' ')
         .map((word) => word[0].toUpperCase() + word.substring(1))
         .join(' ');
-    
+
     final results = await db.query(
       'pest_disease_master',
       where: 'LOWER(name) = ?',
@@ -584,11 +534,11 @@ class PlantDatabaseHelper {
         where: 'LOWER(name) LIKE ?',
         whereArgs: ['%${formattedName.toLowerCase()}%'],
       );
-      
+
       if (fuzzyResults.isEmpty) return null;
       return DiseaseModel.fromMap(fuzzyResults.first);
     }
-    
+
     return DiseaseModel.fromMap(results.first);
   }
 
@@ -671,11 +621,7 @@ class PlantDatabaseHelper {
 
   Future<int> deleteJournalEntry(int id) async {
     final db = await database;
-    return await db.delete(
-      'journal_entries',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('journal_entries', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> saveActivity(PlantActivityModel activity) async {
@@ -697,7 +643,9 @@ class PlantDatabaseHelper {
     }
   }
 
-  Future<List<PlantActivityModel>> getActivitiesByJournalId(int journalId) async {
+  Future<List<PlantActivityModel>> getActivitiesByJournalId(
+    int journalId,
+  ) async {
     final db = await database;
     final results = await db.query(
       'plant_activities',
@@ -733,10 +681,7 @@ class PlantDatabaseHelper {
   // Plant repository methods
   Future<List<PlantModel>> getAllPlants() async {
     final db = await database;
-    final results = await db.query(
-      'plant_master',
-      orderBy: 'common_name ASC',
-    );
+    final results = await db.query('plant_master', orderBy: 'common_name ASC');
     return results.map((map) => PlantModel.fromMap(map)).toList();
   }
 
@@ -764,12 +709,15 @@ class PlantDatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getPlantDiseases(int plantId) async {
     final db = await database;
-    final results = await db.rawQuery('''
+    final results = await db.rawQuery(
+      '''
       SELECT pd.* FROM pest_disease_master pd
       INNER JOIN plant_pest_disease_link ppl ON pd.pest_disease_id = ppl.pest_disease_id
       WHERE ppl.plant_master_id = ?
       ORDER BY pd.name ASC
-    ''', [plantId]);
+    ''',
+      [plantId],
+    );
     return results;
   }
 
@@ -784,5 +732,3 @@ class PlantDatabaseHelper {
     return results;
   }
 }
-
-
