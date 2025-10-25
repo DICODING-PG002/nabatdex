@@ -54,22 +54,6 @@ class PredictionErrorScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
-              const SizedBox(height: 48),
-              
-              ElevatedButton.icon(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.arrow_back),
-                label: const Text('Kembali'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: AppTheme.whiteColor,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                ),
-              ),
             ],
           ),
         ),

@@ -256,6 +256,69 @@ class PlantDatabaseHelper {
       'image_path': 'assets/image/plant/tomato/tomat_hp.jpg',
       'display_order': 1,
     });
+
+    // Rice diseases
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 14, // Bacterial_Leaf_Blight
+      'image_path':
+          'assets/image/plant/paddy/disease/Rice___Bacterial_Leaf_Blight.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 15, // Brown_Spot
+      'image_path': 'assets/image/plant/paddy/disease/Rice___Brown_Spot.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 16, // Leaf_Blast
+      'image_path': 'assets/image/plant/paddy/disease/Rice___Leaf_Blast.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 17, // Leaf_scald
+      'image_path': 'assets/image/plant/paddy/disease/Rice___Leaf_scald.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 18, // Narrow_Brown_Leaf_Spot
+      'image_path':
+          'assets/image/plant/paddy/disease/Rice___Narrow_Brown_Leaf_Spot.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 19, // Neck_Blast
+      'image_path': 'assets/image/plant/paddy/disease/Rice___Neck_Blast.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 20, // Rice_Hispa
+      'image_path': 'assets/image/plant/paddy/disease/Rice___Rice_Hispa.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 21, // Sheath_Blight
+      'image_path': 'assets/image/plant/paddy/disease/Rice___Sheath_Blight.jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 22, // Tungro
+      'image_path': 'assets/image/plant/paddy/disease/Rice___Tungro .jpg',
+      'display_order': 1,
+    });
+
+    await db.insert('pest_disease_image', {
+      'pest_disease_id': 23, // healthy
+      'image_path': 'assets/image/plant/paddy/padi_hp.jpg',
+      'display_order': 1,
+    });
   }
 
   Future<void> _insertDummyData(Database db) async {
@@ -335,6 +398,20 @@ class PlantDatabaseHelper {
           'Tanam varietas yang tahan. Hindari jarak tanam terlalu rapat. Pantau cuaca untuk aplikasi fungisida preventif. Lakukan sanitasi lahan dengan ketat.',
     });
 
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 3,
+      'name': 'Sehat (Healthy)',
+      'type': 'Kondisi',
+      'description':
+          'Tanaman kentang dalam kondisi sehat, tidak menunjukkan gejala penyakit atau serangan hama.',
+      'cause':
+          'Kondisi pertumbuhan optimal, nutrisi tercukupi, dan praktik agronomi yang baik.',
+      'control_solution':
+          'Pertahankan praktik budidaya yang baik. Lakukan pemantauan rutin.',
+      'prevention_guide':
+          'Jaga kebersihan lahan, berikan pupuk berimbang, dan lakukan rotasi tanaman.',
+    });
+
     // Tomat Disease
     await db.insert('pest_disease_master', {
       'pest_disease_id': 4,
@@ -408,7 +485,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 9,
-      'name': 'Tungau Laba-laba (Tungau Bercak Dua)',
+      'name': 'Tungau Laba-laba (Two-spotted Spider Mite)',
       'type': 'Hama',
       'description':
           'Hama umum yang menyerang tanaman tomat. Ukurannya sangat kecil dan sulit dilihat mata telanjang.',
@@ -436,7 +513,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 11,
-      'name': 'Virus Keriting Daun Kuning Tomat (TYLCV)',
+      'name': 'Virus Keriting Daun Kuning Tomat (Tomato Yellow Leaf Curl Virus)',
       'type': 'Virus',
       'description':
           'Penyakit virus yang menyebabkan daun menguning, keriting ke atas, dan tanaman menjadi kerdil.',
@@ -450,7 +527,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 12,
-      'name': 'Virus Mosaik Tomat (ToMV)',
+      'name': 'Virus Mosaik Tomat (Tomato Mosaic Virus)',
       'type': 'Virus',
       'description':
           'Penyakit virus yang menyebabkan pola mosaik (belang-belang hijau muda dan tua) pada daun tomat.',
@@ -460,6 +537,161 @@ class PlantDatabaseHelper {
           'Tidak ada obat untuk virus. Cabut dan musnahkan tanaman terinfeksi. Sanitasi alat dengan ketat. Kendalikan hama vektor seperti kutu daun (aphid) jika ada.',
       'prevention_guide':
           'Gunakan benih bebas virus. Sanitasi alat di antara tanaman. Cuci tangan sebelum menangani tanaman. Musnahkan tanaman terinfeksi segera.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 13,
+      'name': 'Sehat (Healthy)',
+      'type': 'Kondisi',
+      'description':
+          'Tanaman tomat dalam kondisi sehat, tidak menunjukkan gejala penyakit atau serangan hama.',
+      'cause':
+          'Kondisi pertumbuhan optimal, nutrisi tercukupi, dan praktik agronomi yang baik.',
+      'control_solution':
+          'Pertahankan praktik budidaya yang baik. Lakukan pemantauan rutin.',
+      'prevention_guide':
+          'Jaga kebersihan lahan, berikan pupuk berimbang, dan gunakan varietas tahan.',
+    });
+
+    // Rice Disease
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 14,
+      'name': 'Hawar Daun Bakteri / Kresek (Bacterial Leaf Blight)',
+      'type': 'Penyakit',
+      'description':
+          'Menyebabkan daun menguning dari tepi atau ujung, kemudian mengering. Pada fase parah (kresek), tanaman muda mati.',
+      'cause':
+          'Bakteri Xanthomonas oryzae pv. oryzae. Menyebar melalui air irigasi, angin, dan hujan. Kondisi lembab dan hangat memperparah.',
+      'control_solution':
+          'Gunakan bakterisida jika diperlukan. Perbaiki drainase. Hindari pemupukan Nitrogen (N) berlebih.',
+      'prevention_guide':
+          'Gunakan varietas tahan. Jaga jarak tanam. Sanitasi benih. Hindari penggenangan air yang terlalu tinggi.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 15,
+      'name': 'Bercak Coklat (Brown Spot)',
+      'type': 'Penyakit',
+      'description':
+          'Menyebabkan bercak oval berwarna coklat dengan titik abu-abu di tengah pada daun dan gabah.',
+      'cause':
+          'Jamur Cochliobolus miyabeanus. Sering terjadi pada tanah yang kekurangan nutrisi (Kalium, Mangan) atau kondisi air yang buruk.',
+      'control_solution':
+          'Gunakan fungisida (misal: mancozeb). Perbaiki nutrisi tanah dengan pemupukan berimbang.',
+      'prevention_guide':
+          'Gunakan benih sehat. Sanitasi lahan. Pastikan nutrisi Kalium (K) tercukupi. Hindari kekeringan atau kelembaban ekstrem.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 16,
+      'name': 'Blas Daun (Leaf Blast)',
+      'type': 'Penyakit',
+      'description':
+          'Menyebabkan bercak berbentuk belah ketupat pada daun, dengan bagian tengah abu-abu dan tepi coklat.',
+      'cause':
+          'Jamur Pyricularia oryzae. Berkembang pesat pada kelembaban tinggi, suhu sejuk, dan pemupukan Nitrogen (N) berlebih.',
+      'control_solution':
+          'Semprot dengan fungisida (misal: trisiklazol). Hentikan pemupukan N sementara.',
+      'prevention_guide':
+          'Gunakan varietas tahan. Tanam tepat waktu. Hindari pemupukan N berlebih. Jaga jarak tanam.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 17,
+      'name': 'Hawar Pelepah (Leaf Scald)',
+      'type': 'Penyakit',
+      'description':
+          'Menyebabkan lesi besar, lonjong, atau tidak beraturan pada pelepah daun, biasanya dekat permukaan air. Lesi berwarna abu-abu kehijauan dengan tepi coklat tua.',
+      'cause':
+          'Jamur Rhynchosporium oryzae (atau Microdochium oryzae). Menyukai kelembaban tinggi dan suhu sedang.',
+      'control_solution':
+          'Gunakan fungisida. Kurangi kepadatan tanaman. Perbaiki drainase.',
+      'prevention_guide':
+          'Rotasi tanaman. Gunakan benih sehat. Jaga jarak tanam agar sirkulasi udara baik.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 18,
+      'name': 'Bercak Sempit Coklat (Narrow Brown Leaf Spot)',
+      'type': 'Penyakit',
+      'description':
+          'Menyebabkan bercak sempit, pendek, berwarna coklat kemerahan, sejajar dengan urat daun. Umumnya pada daun tua.',
+      'cause':
+          'Jamur Cercospora janseana (Sphaerulina oryzina). Sering terjadi pada tanaman yang kekurangan Kalium (K).',
+      'control_solution':
+          'Pemupukan Kalium (K) yang cukup. Fungisida jarang diperlukan kecuali serangan parah.',
+      'prevention_guide':
+          'Pastikan pemupukan K berimbang. Tanam varietas tahan. Sanitasi sisa tanaman.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 19,
+      'name': 'Blas Leher (Neck Blast)',
+      'type': 'Penyakit',
+      'description':
+          'Bentuk parah dari penyakit blas yang menyerang pangkal malai (leher). Menyebabkan malai patah dan gabah hampa.',
+      'cause':
+          'Jamur Pyricularia oryzae (sama dengan Blas Daun). Terjadi saat kelembaban tinggi selama fase pembungaan.',
+      'control_solution':
+          'Aplikasi fungisida sistemik tepat waktu (saat pembungaan) sangat penting.',
+      'prevention_guide':
+          'Gunakan varietas tahan. Hindari pemupukan N berlebih. Tanam tepat waktu untuk menghindari cuaca lembab saat berbunga.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 20,
+      'name': 'Hispa Padi (Rice Hispa)',
+      'type': 'Hama',
+      'description':
+          'Hama kumbang kecil berduri yang memakan jaringan daun, meninggalkan bekas goresan putih sejajar urat daun.',
+      'cause':
+          'Kumbang Dicladispa armigera. Larva menggerek di dalam daun, sementara kumbang dewasa memakan permukaan daun.',
+      'control_solution':
+          'Gunakan insektisida (misal: fipronil, karbofuran). Pengumpulan manual jika populasi rendah.',
+      'prevention_guide':
+          'Tanam serentak. Sanitasi gulma di sekitar sawah. Gunakan musuh alami (parasitoid).',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 21,
+      'name': 'Hawar Upih (Sheath Blight)',
+      'type': 'Penyakit',
+      'description':
+          'Menyebabkan bercak besar, tidak beraturan, berwarna abu-abu kehijauan pada pelepah daun, seringkali dekat garis air.',
+      'cause':
+          'Jamur Rhizoctonia solani. Menyukai kelembaban tinggi, suhu hangat, dan jarak tanam rapat.',
+      'control_solution':
+          'Gunakan fungisida (misal: heksakonazol). Perbaiki drainase. Kurangi pemupukan N.',
+      'prevention_guide':
+          'Jaga jarak tanam. Hindari pemupukan N berlebih. Sanitasi sisa tanaman.',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 22,
+      'name': 'Tungro (Tungro)',
+      'type': 'Virus',
+      'description':
+          'Penyakit virus paling merusak pada padi. Menyebabkan tanaman kerdil, daun menguning atau oranye, dan malai kecil/hampa.',
+      'cause':
+          'Disebabkan oleh dua jenis virus (RTSV dan RTBV) yang ditularkan oleh wereng hijau (Nephotettix virescens).',
+      'control_solution':
+          'Tidak ada obat. Cabut dan musnahkan tanaman terinfeksi. Kendalikan vektor (wereng hijau) dengan insektisida.',
+      'prevention_guide':
+          'Tanam varietas tahan. Tanam serentak. Rotasi tanaman. Sanitasi gulma (inang wereng).',
+    });
+
+    await db.insert('pest_disease_master', {
+      'pest_disease_id': 23,
+      'name': 'Sehat (Healthy)',
+      'type': 'Kondisi',
+      'description':
+          'Tanaman padi dalam kondisi sehat, tidak menunjukkan gejala penyakit atau serangan hama.',
+      'cause':
+          'Kondisi pertumbuhan optimal, nutrisi tercukupi, dan praktik agronomi yang baik.',
+      'control_solution':
+          'Pertahankan praktik budidaya yang baik. Lakukan pemantauan rutin.',
+      'prevention_guide':
+          'Jaga kebersihan lahan, berikan pupuk berimbang, dan lakukan rotasi tanaman.',
     });
 
     // PLANT DISEASE LINK
@@ -520,22 +752,46 @@ class PlantDatabaseHelper {
       'pest_disease_id': 13,
     }); // healthy
 
-    // --- [ADDITION] Rice Disease Links (plant_master_id: 3) ---
+    // Rice Disease Links (plant_master_id: 3)
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 3,
       'pest_disease_id': 14,
-    }); // Kresek
+    }); // Bacterial_Leaf_Blight
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 3,
       'pest_disease_id': 15,
-    }); // Blas
+    }); // Brown_Spot
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 3,
       'pest_disease_id': 16,
-    }); // Tungro
+    }); // Leaf_Blast
     await db.insert('plant_pest_disease_link', {
       'plant_master_id': 3,
       'pest_disease_id': 17,
+    }); // Leaf_scald
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 3,
+      'pest_disease_id': 18,
+    }); // Narrow_Brown_Leaf_Spot
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 3,
+      'pest_disease_id': 19,
+    }); // Neck_Blast
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 3,
+      'pest_disease_id': 20,
+    }); // Rice_Hispa
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 3,
+      'pest_disease_id': 21,
+    }); // Sheath_Blight
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 3,
+      'pest_disease_id': 22,
+    }); // Tungro
+    await db.insert('plant_pest_disease_link', {
+      'plant_master_id': 3,
+      'pest_disease_id': 23,
     }); // healthy
   }
 

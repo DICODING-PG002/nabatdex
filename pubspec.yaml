@@ -77,6 +77,9 @@ flutter:
     - assets/image/plant/potato/disease/
     - assets/image/plant/tomato/
     - assets/image/plant/tomato/disease/
+    - assets/image/plant/paddy/
+    - assets/image/plant/paddy/disease/
+    - lib/core/services/machine_learning_model/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
