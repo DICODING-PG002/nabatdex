@@ -372,7 +372,7 @@ class PlantDatabaseHelper {
     // Potato Disease
     await db.insert('pest_disease_master', {
       'pest_disease_id': 1,
-      'name': 'Bercak Kering (Early Blight)',
+      'name': 'Bercak Kering (Potato Early Blight)',
       'type': 'Penyakit',
       'description':
           'Penyakit jamur umum yang menyerang tanaman kentang, ditandai dengan bercak coklat tua konsentris pada daun.',
@@ -386,7 +386,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 2,
-      'name': 'Hawar Daun (Late Blight)',
+      'name': 'Hawar Daun (Potato Late Blight)',
       'type': 'Penyakit',
       'description':
           'Penyakit yang sangat merusak yang menyerang tanaman kentang dan tomat, menyebabkan daun dan umbi membusuk.',
@@ -400,7 +400,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 3,
-      'name': 'Sehat (Healthy)',
+      'name': 'Sehat',
       'type': 'Kondisi',
       'description':
           'Tanaman kentang dalam kondisi sehat, tidak menunjukkan gejala penyakit atau serangan hama.',
@@ -415,7 +415,7 @@ class PlantDatabaseHelper {
     // Tomat Disease
     await db.insert('pest_disease_master', {
       'pest_disease_id': 4,
-      'name': 'Bercak Bakteri (Bacterial Spot)',
+      'name': 'Bercak Bakteri (Tomato Bacterial Spot)',
       'type': 'Penyakit',
       'description':
           'Penyakit bakteri umum yang menyerang daun, batang, dan buah tomat, menyebabkan bercak kecil basah yang kemudian menjadi gelap.',
@@ -429,7 +429,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 5,
-      'name': 'Bercak Kering (Early Blight)',
+      'name': 'Bercak Kering (Tomato Early Blight)',
       'type': 'Penyakit',
       'description':
           'Penyakit jamur yang menyerang tanaman tomat, mirip dengan pada kentang. Menyebabkan bercak konsentris pada daun, batang, dan buah.',
@@ -443,7 +443,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 6,
-      'name': 'Hawar Daun (Late Blight)',
+      'name': 'Hawar Daun (Tomato Late Blight)',
       'type': 'Penyakit',
       'description':
           'Penyakit jamur yang sangat merusak pada tomat, sama seperti pada kentang. Menyebabkan bercak besar basah pada daun dan buah.',
@@ -457,7 +457,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 7,
-      'name': 'Bercak Kapang Daun (Leaf Mold)',
+      'name': 'Bercak Kapang Daun (Tomato Leaf Mold)',
       'type': 'Penyakit',
       'description':
           'Penyakit jamur yang menyerang daun tomat, terutama di rumah kaca atau area dengan kelembaban tinggi.',
@@ -471,7 +471,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 8,
-      'name': 'Bercak Daun Septoria (Septoria Leaf Spot)',
+      'name': 'Bercak Daun Septoria (Tomato Septoria Leaf Spot)',
       'type': 'Penyakit',
       'description':
           'Penyakit jamur yang menyebabkan banyak bercak kecil bundar dengan bagian tengah abu-abu pada daun tomat.',
@@ -485,7 +485,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 9,
-      'name': 'Tungau Laba-laba (Two-spotted Spider Mite)',
+      'name': 'Tungau Laba-laba (Tomato Spider Mites Two Spotted Spider Mite)',
       'type': 'Hama',
       'description':
           'Hama umum yang menyerang tanaman tomat. Ukurannya sangat kecil dan sulit dilihat mata telanjang.',
@@ -499,7 +499,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 10,
-      'name': 'Bercak Target (Target Spot)',
+      'name': 'Bercak Target (Tomato Target Spot)',
       'type': 'Penyakit',
       'description':
           'Penyakit jamur yang menyebabkan bercak bundar seperti "target" (lingkaran konsentris) pada daun tomat.',
@@ -513,7 +513,8 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 11,
-      'name': 'Virus Keriting Daun Kuning Tomat (Tomato Yellow Leaf Curl Virus)',
+      'name':
+          'Virus Keriting Daun Kuning Tomat (Tomato Tomato Yellowleaf Curl Virus)',
       'type': 'Virus',
       'description':
           'Penyakit virus yang menyebabkan daun menguning, keriting ke atas, dan tanaman menjadi kerdil.',
@@ -527,7 +528,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 12,
-      'name': 'Virus Mosaik Tomat (Tomato Mosaic Virus)',
+      'name': 'Virus Mosaik Tomat (Tomato Tomato Mosaic Virus)',
       'type': 'Virus',
       'description':
           'Penyakit virus yang menyebabkan pola mosaik (belang-belang hijau muda dan tua) pada daun tomat.',
@@ -541,7 +542,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 13,
-      'name': 'Sehat (Healthy)',
+      'name': 'Sehat',
       'type': 'Kondisi',
       'description':
           'Tanaman tomat dalam kondisi sehat, tidak menunjukkan gejala penyakit atau serangan hama.',
@@ -556,7 +557,7 @@ class PlantDatabaseHelper {
     // Rice Disease
     await db.insert('pest_disease_master', {
       'pest_disease_id': 14,
-      'name': 'Hawar Daun Bakteri / Kresek (Bacterial Leaf Blight)',
+      'name': 'Hawar Daun Bakteri / Kresek (Rice Rice Bacterial Leaf Blight)',
       'type': 'Penyakit',
       'description':
           'Menyebabkan daun menguning dari tepi atau ujung, kemudian mengering. Pada fase parah (kresek), tanaman muda mati.',
@@ -570,7 +571,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 15,
-      'name': 'Bercak Coklat (Brown Spot)',
+      'name': 'Bercak Coklat (Rice Rice Brown Spot)',
       'type': 'Penyakit',
       'description':
           'Menyebabkan bercak oval berwarna coklat dengan titik abu-abu di tengah pada daun dan gabah.',
@@ -584,7 +585,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 16,
-      'name': 'Blas Daun (Leaf Blast)',
+      'name': 'Blas Daun (Rice Rice Leaf Blast)',
       'type': 'Penyakit',
       'description':
           'Menyebabkan bercak berbentuk belah ketupat pada daun, dengan bagian tengah abu-abu dan tepi coklat.',
@@ -598,7 +599,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 17,
-      'name': 'Hawar Pelepah (Leaf Scald)',
+      'name': 'Hawar Pelepah (Rice Rice Leaf Scald)',
       'type': 'Penyakit',
       'description':
           'Menyebabkan lesi besar, lonjong, atau tidak beraturan pada pelepah daun, biasanya dekat permukaan air. Lesi berwarna abu-abu kehijauan dengan tepi coklat tua.',
@@ -612,7 +613,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 18,
-      'name': 'Bercak Sempit Coklat (Narrow Brown Leaf Spot)',
+      'name': 'Bercak Sempit Coklat (Rice Rice Narrow Brown Leaf Spot)',
       'type': 'Penyakit',
       'description':
           'Menyebabkan bercak sempit, pendek, berwarna coklat kemerahan, sejajar dengan urat daun. Umumnya pada daun tua.',
@@ -626,7 +627,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 19,
-      'name': 'Blas Leher (Neck Blast)',
+      'name': 'Blas Leher (Rice Rice Neck Blast)',
       'type': 'Penyakit',
       'description':
           'Bentuk parah dari penyakit blas yang menyerang pangkal malai (leher). Menyebabkan malai patah dan gabah hampa.',
@@ -640,7 +641,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 20,
-      'name': 'Hispa Padi (Rice Hispa)',
+      'name': 'Hispa Padi (Rice Rice Rice Hispa)',
       'type': 'Hama',
       'description':
           'Hama kumbang kecil berduri yang memakan jaringan daun, meninggalkan bekas goresan putih sejajar urat daun.',
@@ -654,7 +655,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 21,
-      'name': 'Hawar Upih (Sheath Blight)',
+      'name': 'Hawar Upih (Rice Rice Sheath Blight)',
       'type': 'Penyakit',
       'description':
           'Menyebabkan bercak besar, tidak beraturan, berwarna abu-abu kehijauan pada pelepah daun, seringkali dekat garis air.',
@@ -668,7 +669,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 22,
-      'name': 'Tungro (Tungro)',
+      'name': 'Tungro (Rice Rice Tungro)',
       'type': 'Virus',
       'description':
           'Penyakit virus paling merusak pada padi. Menyebabkan tanaman kerdil, daun menguning atau oranye, dan malai kecil/hampa.',
@@ -682,7 +683,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_master', {
       'pest_disease_id': 23,
-      'name': 'Sehat (Healthy)',
+      'name': 'Sehat',
       'type': 'Kondisi',
       'description':
           'Tanaman padi dalam kondisi sehat, tidak menunjukkan gejala penyakit atau serangan hama.',
