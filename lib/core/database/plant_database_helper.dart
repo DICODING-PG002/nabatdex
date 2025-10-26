@@ -310,7 +310,7 @@ class PlantDatabaseHelper {
 
     await db.insert('pest_disease_image', {
       'pest_disease_id': 22, // Tungro
-      'image_path': 'assets/image/plant/paddy/disease/Rice___Tungro .jpg',
+      'image_path': 'assets/image/plant/paddy/disease/Rice___Tungro.jpg',
       'display_order': 1,
     });
 
