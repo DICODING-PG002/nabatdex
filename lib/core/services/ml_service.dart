@@ -4,58 +4,267 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
+import 'isolate_inference.dart';
 
 class MLService {
-  static Interpreter? _interpreter;
-  static List<String>? _labels;
-  
-  static Future<void> _loadModel() async {
-    if (_interpreter == null) {
-      try {
-        _interpreter = await Interpreter.fromAsset('lib/core/services/machine_learning_model/model.tflite');
-        debugPrint('Model loaded successfully');
-      } catch (e) {
-        debugPrint('Error loading model: $e');
-        rethrow;
+  final modelPath = 'lib/core/services/machine_learning_model/model(1).tflite';
+  final labelsPath = 'lib/core/services/machine_learning_model/label.txt';
+
+  late final Interpreter interpreter;
+  late final List<String> labels;
+  late Tensor inputTensor;
+  late Tensor outputTensor;
+
+  late final IsolateInference isolateInference;
+  bool _isInitialized = false;
+
+  /// Load model with platform-specific optimizations
+  Future<void> _loadModel() async {
+    // Try loading with different configurations
+    Exception? lastError;
+    
+    // Configuration 1: Try with platform delegates
+    try {
+      debugPrint('Attempting to load model with platform delegates...');
+      final options = InterpreterOptions()
+        ..threads = 4;
+      
+      if (Platform.isAndroid) {
+        options.useNnApiForAndroid = true;
+      } else if (Platform.isIOS) {
+        options.useMetalDelegateForIOS = true;
       }
+      
+      interpreter = await Interpreter.fromAsset(modelPath, options: options);
+      inputTensor = interpreter.getInputTensors().first;
+      outputTensor = interpreter.getOutputTensors().first;
+      
+      debugPrint('✅ Interpreter loaded with platform delegates');
+      debugPrint('Input shape: ${inputTensor.shape}');
+      debugPrint('Output shape: ${outputTensor.shape}');
+      return;
+    } catch (e) {
+      debugPrint('Failed to load with platform delegates: $e');
+      lastError = e as Exception;
     }
     
-    if (_labels == null) {
-      try {
-        final labelData = await rootBundle.loadString('lib/core/services/machine_learning_model/label.txt');
-        _labels = labelData.split('\n').where((line) => line.isNotEmpty).toList();
-        debugPrint('Labels loaded: ${_labels!.length} classes');
-      } catch (e) {
-        debugPrint('Error loading labels: $e');
-        rethrow;
-      }
+    // Configuration 2: Try with basic options (fallback)
+    try {
+      debugPrint('Attempting to load model with basic options...');
+      final options = InterpreterOptions()
+        ..threads = 4;
+      
+      interpreter = await Interpreter.fromAsset(modelPath, options: options);
+      inputTensor = interpreter.getInputTensors().first;
+      outputTensor = interpreter.getOutputTensors().first;
+      
+      debugPrint('✅ Interpreter loaded with basic options');
+      debugPrint('Input shape: ${inputTensor.shape}');
+      debugPrint('Output shape: ${outputTensor.shape}');
+      return;
+    } catch (e) {
+      debugPrint('Failed to load with basic options: $e');
+      lastError = e as Exception;
+    }
+    
+    // Configuration 3: Try without any options (last resort)
+    try {
+      debugPrint('Attempting to load model without options...');
+      interpreter = await Interpreter.fromAsset(modelPath);
+      inputTensor = interpreter.getInputTensors().first;
+      outputTensor = interpreter.getOutputTensors().first;
+      
+      debugPrint('⚠️ Interpreter loaded without options (may be slower)');
+      debugPrint('Input shape: ${inputTensor.shape}');
+      debugPrint('Output shape: ${outputTensor.shape}');
+      return;
+    } catch (e) {
+      debugPrint('Failed to load without options: $e');
+      lastError = e as Exception;
+    }
+    
+    // If all attempts failed, throw the last error
+    throw Exception(
+      'Failed to load model after trying multiple configurations. '
+      'This might be due to incompatible model operators. '
+      'Please check if your model is compatible with TFLite runtime version. '
+      'Last error: $lastError'
+    );
+  }
+
+  /// Load labels from text file
+  Future<void> _loadLabels() async {
+    final labelTxt = await rootBundle.loadString(labelsPath);
+    labels = labelTxt.split('\n').where((line) => line.isNotEmpty).toList();
+    debugPrint('✅ Labels loaded: ${labels.length} classes');
+  }
+
+  /// Initialize the ML service
+  Future<void> init() async {
+    if (_isInitialized) return;
+    
+    try {
+      await _loadLabels();
+      await _loadModel();
+      isolateInference = IsolateInference();
+      await isolateInference.start();
+      _isInitialized = true;
+      debugPrint('ML Service initialized successfully');
+    } catch (e) {
+      debugPrint('Error initializing ML Service: $e');
+      rethrow;
     }
   }
 
-  /// Load model dari data yang dikirim ke isolate
-  static Future<void> _loadModelFromData(_IsolateModelData modelData) async {
-    if (_interpreter == null && modelData.modelBytes != null) {
-      try {
-        _interpreter = Interpreter.fromBuffer(modelData.modelBytes!);
-        debugPrint('Model loaded from isolate data');
-      } catch (e) {
-        debugPrint('Error loading model from data: $e');
-        rethrow;
+  /// Predict image with isolate for better performance
+  Future<Map<String, dynamic>> predictImage(String imagePath) async {
+    try {
+      if (!_isInitialized) {
+        await init();
       }
-    }
-    
-    if (_labels == null && modelData.labels != null) {
-      _labels = modelData.labels;
-      debugPrint('Labels loaded from isolate data: ${_labels!.length} classes');
+
+      final file = File(imagePath);
+      if (!await file.exists()) {
+        throw Exception('Image file not found: $imagePath');
+      }
+
+      // Load and preprocess image in main isolate
+      final imageBytes = await file.readAsBytes();
+      final image = img.decodeImage(imageBytes);
+
+      if (image == null) {
+        throw Exception('Failed to decode image');
+      }
+
+      debugPrint('Image loaded: ${image.width}x${image.height}');
+
+      // Preprocess image
+      final preprocessedImage = _preprocessImage(image);
+
+      // Use isolate for inference in debug mode, or run directly in release mode
+      if (kDebugMode) {
+        return await _runInferenceInIsolate(preprocessedImage);
+      } else {
+        // In release mode, run directly for better performance
+        return await _runInferenceDirect(preprocessedImage);
+      }
+    } catch (e) {
+      debugPrint('Error during prediction: $e');
+      rethrow;
     }
   }
-  
+
+  /// Run inference in isolate (for debug mode)
+  Future<Map<String, dynamic>> _runInferenceInIsolate(
+    List<List<List<double>>> preprocessedImage,
+  ) async {
+    final isolateModel = InferenceModel(
+      preprocessedImage,
+      interpreter.address,
+      labels,
+      inputTensor.shape,
+      outputTensor.shape,
+    );
+
+    ReceivePort responsePort = ReceivePort();
+    isolateInference.sendPort.send(
+      isolateModel..responsePort = responsePort.sendPort,
+    );
+
+    final result = await responsePort.first as Map<String, dynamic>;
+    
+    if (result.containsKey('error')) {
+      throw Exception(result['error']);
+    }
+    
+    return result;
+  }
+
+  /// Run inference directly in main isolate (for release mode or fallback)
+  Future<Map<String, dynamic>> _runInferenceDirect(
+    List<List<List<double>>> preprocessedImage,
+  ) async {
+    final input = [preprocessedImage];
+    final output = [List<double>.filled(outputTensor.shape[1], 0.0)];
+
+    interpreter.run(input, output);
+
+    final result = output.first;
+    
+    // Parse the result
+    return _parseOutput(result);
+  }
+
+  /// Preprocess image for model input
+  List<List<List<double>>> _preprocessImage(img.Image image) {
+    // Resize to 256x256 if needed
+    img.Image resizedImage = image;
+    if (image.width != 256 || image.height != 256) {
+      resizedImage = img.copyResize(
+        image,
+        width: 256,
+        height: 256,
+        interpolation: img.Interpolation.linear,
+      );
+    }
+
+    // Convert to format required by model: [256, 256, 3]
+    final imageMatrix = List.generate(
+      256,
+      (y) => List.generate(
+        256,
+        (x) {
+          final pixel = resizedImage.getPixel(x, y);
+          // Normalize pixel values to 0-1 range
+          return [
+            pixel.r / 255.0,
+            pixel.g / 255.0,
+            pixel.b / 255.0,
+          ];
+        },
+      ),
+    );
+
+    return imageMatrix;
+  }
+
+  /// Parse output from model
+  Map<String, dynamic> _parseOutput(List<double> probabilities) {
+    if (labels.isEmpty) {
+      throw Exception('Labels not loaded');
+    }
+
+    // Get index with highest confidence
+    int maxIndex = 0;
+    double maxConfidence = probabilities[0];
+
+    for (int i = 1; i < probabilities.length; i++) {
+      if (probabilities[i] > maxConfidence) {
+        maxConfidence = probabilities[i];
+        maxIndex = i;
+      }
+    }
+
+    // Get predicted label
+    final predictedLabel = labels[maxIndex];
+    debugPrint('🎯 Predicted: $predictedLabel (confidence: ${(maxConfidence * 100).toStringAsFixed(2)}%)');
+
+    // Parse label to extract plant and disease
+    final parsedResult = _parseLabel(predictedLabel);
+
+    return {
+      'plantName': parsedResult['plantName'],
+      'confidence': maxConfidence,
+      'diseaseName': parsedResult['diseaseName'],
+    };
+  }
+
   static const Map<String, String> _plantMapping = {
     'Potato': 'kentang',
     'Rice': 'padi',
     'Tomato': 'tomat',
   };
-  
+
   static const Map<String, String> _diseaseMapping = {
     'Early_blight': 'early_blight',
     'Late_blight': 'late_blight',
@@ -88,176 +297,10 @@ class MLService {
     'Tomato_mosaic_virus': 'mosaic_virus',
   };
 
-  Future<Map<String, dynamic>> predictImage(String imagePath) async {
-    // Load model di main isolate terlebih dahulu
-    await _loadModel();
-    
-    if (kDebugMode) {
-      return await _runInIsolate(imagePath);
-    } else {
-      return await _predictImageInternal(imagePath);
-    }
-  }
-
-  Future<Map<String, dynamic>> _runInIsolate(String imagePath) async {
-    final receivePort = ReceivePort();
-    
-    // Siapkan data model untuk dikirim ke isolate
-    final modelData = _IsolateModelData(
-      modelBytes: _interpreter != null ? await _getModelBytes() : null,
-      labels: _labels,
-    );
-    
-    await Isolate.spawn(
-      _isolateEntryPoint,
-      _IsolateData(
-        sendPort: receivePort.sendPort,
-        imagePath: imagePath,
-        modelData: modelData,
-      ),
-    );
-
-    final result = await receivePort.first as Map<String, dynamic>;
-    return result;
-  }
-
-  static Future<Uint8List> _getModelBytes() async {
-    final modelData = await rootBundle.load('lib/core/services/machine_learning_model/model.tflite');
-    return modelData.buffer.asUint8List();
-  }
-
-  static void _isolateEntryPoint(_IsolateData data) async {
-    final result = await _predictImageInternal(data.imagePath, data.modelData);
-    data.sendPort.send(result);
-  }
-
-  static Future<Map<String, dynamic>> _predictImageInternal(String imagePath, [_IsolateModelData? modelData]) async {
-    final file = File(imagePath);
-    if (!await file.exists()) {
-      throw Exception('Image file not found');
-    }
-
-    // Load model dan labels
-    if (modelData != null) {
-      // Di isolate, gunakan data yang dikirim
-      await _loadModelFromData(modelData);
-    } else {
-      // Di main thread, load normal
-      await _loadModel();
-    }
-
-    try {
-      // Load dan preprocess image
-      final imageBytes = await file.readAsBytes();
-      final image = img.decodeImage(imageBytes);
-      
-      if (image == null) {
-        throw Exception('Failed to decode image');
-      }
-
-      // Preprocess image untuk model
-      final input = _preprocessImage(image);
-
-      // Get model input/output shapes
-      final inputShape = _interpreter!.getInputTensor(0).shape;
-      final outputShape = _interpreter!.getOutputTensor(0).shape;
-      
-      debugPrint('Input shape: $inputShape');
-      debugPrint('Output shape: $outputShape');
-
-      // Prepare output tensor
-      final output = List.filled(outputShape.reduce((a, b) => a * b), 0.0).reshape(outputShape);
-
-      // Run inference
-      _interpreter!.run(input, output);
-
-      // Parse hasil
-      final results = _parseOutput(output);
-
-      debugPrint('Prediction result: $results');
-
-      return results;
-    } catch (e) {
-      debugPrint('❌ Error during inference: $e');
-      rethrow;
-    }
-  }
-
-  /// Preprocess image untuk model TFLite
-  static List<List<List<List<double>>>> _preprocessImage(img.Image image) {
-    // Resize ke 256x256 jika belum
-    img.Image resizedImage = image;
-    if (image.width != 256 || image.height != 256) {
-      resizedImage = img.copyResize(
-        image,
-        width: 256,
-        height: 256,
-        interpolation: img.Interpolation.linear,
-      );
-    }
-
-    // Convert ke format yang dibutuhkan model: [1, 256, 256, 3]
-    final input = List.generate(
-      1,
-      (_) => List.generate(
-        256,
-        (_) => List.generate(
-          256,
-          (_) => List.generate(3, (_) => 0.0),
-        ),
-      ),
-    );
-
-    // Normalize pixel values ke range 0-1
-    for (int y = 0; y < 256; y++) {
-      for (int x = 0; x < 256; x++) {
-        final pixel = resizedImage.getPixel(x, y);
-        input[0][y][x][0] = pixel.r / 255.0; // Red
-        input[0][y][x][1] = pixel.g / 255.0; // Green
-        input[0][y][x][2] = pixel.b / 255.0; // Blue
-      }
-    }
-
-    return input;
-  }
-
-  /// Parse output dari model
-  static Map<String, dynamic> _parseOutput(List output) {
-    if (_labels == null || _labels!.isEmpty) {
-      throw Exception('Labels not loaded');
-    }
-
-    final probabilities = output[0] as List<double>;
-    
-    // Get index dengan confidence tertinggi
-    int maxIndex = 0;
-    double maxConfidence = probabilities[0];
-    
-    for (int i = 1; i < probabilities.length; i++) {
-      if (probabilities[i] > maxConfidence) {
-        maxConfidence = probabilities[i];
-        maxIndex = i;
-      }
-    }
-
-    // Get predicted label
-    final predictedLabel = _labels![maxIndex];
-    debugPrint('Predicted label: $predictedLabel (confidence: $maxConfidence)');
-
-    // Parse label untuk extract plant dan disease
-    final parsedResult = _parseLabel(predictedLabel);
-
-    return {
-      'plantName': parsedResult['plantName'],
-      'confidence': maxConfidence,
-      'diseaseName': parsedResult['diseaseName'],
-    };
-  }
-
   static Map<String, dynamic> _parseLabel(String label) {
     String plantName = 'unknown';
     String? diseaseName;
-    
+
     if (label.contains('___')) {
       final parts = label.split('___');
       if (parts.length == 2) {
@@ -278,7 +321,7 @@ class MLService {
         diseaseName = _diseaseMapping[diseasePart] ?? diseasePart.toLowerCase();
       }
     } else {
-      debugPrint('Unexpected label format: $label');
+      debugPrint('⚠️ Unexpected label format: $label');
     }
 
     return {
@@ -287,27 +330,13 @@ class MLService {
     };
   }
 
+  /// Clean up resources
+  Future<void> close() async {
+    if (_isInitialized) {
+      await isolateInference.close();
+      interpreter.close();
+      _isInitialized = false;
+      debugPrint('✅ ML Service closed');
+    }
+  }
 }
-
-class _IsolateData {
-  final SendPort sendPort;
-  final String imagePath;
-  final _IsolateModelData? modelData;
-
-  _IsolateData({
-    required this.sendPort,
-    required this.imagePath,
-    this.modelData,
-  });
-}
-
-class _IsolateModelData {
-  final Uint8List? modelBytes;
-  final List<String>? labels;
-
-  _IsolateModelData({
-    this.modelBytes,
-    this.labels,
-  });
-}
-
